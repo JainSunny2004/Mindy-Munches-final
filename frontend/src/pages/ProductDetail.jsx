@@ -7,7 +7,6 @@ import useAuthStore from "../store/authStore";
 import Loader from "../components/Loader";
 import ProductCard from "../components/ProductCard";
 
-
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -20,212 +19,217 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
-
   const { addItem, items } = useCartStore();
   const { isAuthenticated } = useAuthStore();
 
-
   // Helper function to resolve image URLs
   const resolveImageUrl = (imagePath) => {
-    if (!imagePath) return '';
+    if (!imagePath) return "";
 
     // External URLs (start with http)
-    if (imagePath.startsWith('http')) {
+    if (imagePath.startsWith("http")) {
       return imagePath;
     }
 
     // Local images - ensure they start with /
-    if (!imagePath.startsWith('/')) {
+    if (!imagePath.startsWith("/")) {
       return `/${imagePath}`;
     }
 
     return imagePath;
   };
 
-
   useEffect(() => {
     const loadProduct = async () => {
       try {
         setLoading(true);
 
-
         // Helper function to check if we're in Netlify environment
         const isNetlify = () => {
-          return window.location.hostname.includes('netlify.app') || 
-                 window.location.hostname.includes('netlify.com') ||
-                 import.meta.env.VITE_NETLIFY_DEPLOY === 'true';
+          return (
+            window.location.hostname.includes("netlify.app") ||
+            window.location.hostname.includes("netlify.com") ||
+            import.meta.env.VITE_NETLIFY_DEPLOY === "true"
+          );
         };
 
-
-        let product, products = [];
+        let product,
+          products = [];
         let response;
-
 
         try {
           // First, try to fetch from API
           if (import.meta.env.VITE_API_URL && !isNetlify()) {
-            console.log('Attempting to fetch from API...');
-            response = await fetch(`${import.meta.env.VITE_API_URL}/products/${id}`, {
-              headers: { 'Accept': 'application/json' }
-            });
-
+            console.log("Attempting to fetch from API...");
+            response = await fetch(
+              `${import.meta.env.VITE_API_URL}/products/${id}`,
+              {
+                headers: { Accept: "application/json" },
+              }
+            );
 
             if (response.ok) {
               const apiResponse = await response.json();
-              console.log('Product fetched from API:', apiResponse);
+              console.log("Product fetched from API:", apiResponse);
 
               // Handle API response structure properly
-              if (apiResponse.success && apiResponse.data && apiResponse.data.product) {
-                product = apiResponse.data.product;  // Extract product from nested structure
+              if (
+                apiResponse.success &&
+                apiResponse.data &&
+                apiResponse.data.product
+              ) {
+                product = apiResponse.data.product; // Extract product from nested structure
               } else if (apiResponse.data) {
                 product = apiResponse.data;
               } else {
                 product = apiResponse;
               }
 
-
-
               try {
-                const allProductsRes = await fetch(`${import.meta.env.VITE_API_URL}/products`, {
-                  headers: { 'Accept': 'application/json' }
-                });
+                const allProductsRes = await fetch(
+                  `${import.meta.env.VITE_API_URL}/products`,
+                  {
+                    headers: { Accept: "application/json" },
+                  }
+                );
                 if (allProductsRes.ok) {
                   const allProducts = await allProductsRes.json();
                   products = allProducts.products || allProducts;
                 }
               } catch (relatedError) {
-                console.warn('Could not fetch related products from API:', relatedError);
+                console.warn(
+                  "Could not fetch related products from API:",
+                  relatedError
+                );
                 products = [];
               }
             } else {
               throw new Error(`API failed with status ${response.status}`);
             }
           } else {
-            throw new Error('API not available or Netlify environment detected');
+            throw new Error(
+              "API not available or Netlify environment detected"
+            );
           }
         } catch (apiError) {
-          console.warn('API failed, falling back to products.json:', apiError.message);
+          console.warn(
+            "API failed, falling back to products.json:",
+            apiError.message
+          );
 
           // Fallback to products.json file
           try {
-            response = await fetch('/data/products.json', {
-              headers: { 'Accept': 'application/json' }
+            response = await fetch("/data/products.json", {
+              headers: { Accept: "application/json" },
             });
-
 
             if (response.ok) {
               const data = await response.json();
               products = data.products || data;
-              product = products.find(p => p.id === parseInt(id));
-              console.log('Product fetched from products.json:', product);
+              product = products.find((p) => p.id === parseInt(id));
+              console.log("Product fetched from products.json:", product);
             } else {
-              throw new Error('products.json file not found');
+              throw new Error("products.json file not found");
             }
           } catch (publicError) {
-            console.warn('products.json failed:', publicError.message);
+            console.warn("products.json failed:", publicError.message);
             throw publicError;
           }
         }
 
-
         // Product not found
         if (!product) {
           console.error(`Product with ID ${id} not found`);
-          navigate('/products');
+          navigate("/products");
           return;
         }
 
-
         setProduct(product);
-
 
         // Related products logic
         let related = [];
         if (products.length > 0) {
           related = products
-            .filter(p => p.category === product.category && p.id !== product.id)
+            .filter(
+              (p) => p.category === product.category && p.id !== product.id
+            )
             .slice(0, 4);
         }
         setRelatedProducts(related);
-
-
       } catch (error) {
-        console.error('Error loading product:', error);
-        navigate('/products');
+        console.error("Error loading product:", error);
+        navigate("/products");
       } finally {
         setLoading(false);
       }
     };
 
-
     loadProduct();
   }, [id, navigate]);
-
 
   // Enhanced image handling with proper URL resolution
   const productImages = useMemo(() => {
     if (!product) return [];
 
     // Priority: images array > single image > empty array
-    if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+    if (
+      product.images &&
+      Array.isArray(product.images) &&
+      product.images.length > 0
+    ) {
       // Filter and resolve image paths - handle both string and object formats
       return product.images
-    .filter(img => {
-      if (typeof img === 'string') {
-        return img.trim() !== '';
-      } else if (img && typeof img === 'object' && img.url) {
-        return typeof img.url === 'string' && img.url.trim() !== '';
-      }
-      return false;
-    })
-    .map(img => {
-      if (typeof img === 'string') {
-        return resolveImageUrl(img);
-      } else if (img && typeof img === 'object' && img.url) {
-        return resolveImageUrl(img.url);
-      }
-      return '';
-    });
-} else if (product.image && typeof product.image === 'string' && product.image.trim() !== '') {
-  return [resolveImageUrl(product.image)];
-} else {
-  return [];
-}
-
-
+        .filter((img) => {
+          if (typeof img === "string") {
+            return img.trim() !== "";
+          } else if (img && typeof img === "object" && img.url) {
+            return typeof img.url === "string" && img.url.trim() !== "";
+          }
+          return false;
+        })
+        .map((img) => {
+          if (typeof img === "string") {
+            return resolveImageUrl(img);
+          } else if (img && typeof img === "object" && img.url) {
+            return resolveImageUrl(img.url);
+          }
+          return "";
+        });
+    } else if (
+      product.image &&
+      typeof product.image === "string" &&
+      product.image.trim() !== ""
+    ) {
+      return [resolveImageUrl(product.image)];
+    } else {
+      return [];
+    }
 
     return [];
   }, [product]);
-
 
   // Reset selected image index when product changes
   useEffect(() => {
     setSelectedImageIndex(0);
   }, [product?.id]);
 
-
-const formatPrice = (price) => {
-  const numPrice = Number(price);
-  if (isNaN(numPrice) || !price) {
-    console.log('Invalid price:', price, typeof price);
-    return "Price not available";
-  }
-  return `₹ ${numPrice.toLocaleString("en-IN")}`;  // Don't divide by 100 - MongoDB stores actual price
-};
-
-
-
+  const formatPrice = (price) => {
+    const numPrice = Number(price);
+    if (isNaN(numPrice) || !price) {
+      console.log("Invalid price:", price, typeof price);
+      return "Price not available";
+    }
+    return `₹ ${numPrice.toLocaleString("en-IN")}`; // Don't divide by 100 - MongoDB stores actual price
+  };
 
   const handleAddToCart = async () => {
     // Allow adding to cart for both authenticated and guest users
     setIsAddingToCart(true);
 
-
     // Add multiple quantities
     for (let i = 0; i < quantity; i++) {
       addItem(product);
     }
-
 
     // Show success notification
     const notification = document.createElement("div");
@@ -239,17 +243,14 @@ const formatPrice = (price) => {
       }
     }, 3000);
 
-
     setTimeout(() => {
       setIsAddingToCart(false);
     }, 500);
   };
 
-
   const isInCart = items.some((item) => item.id === product?.id);
   const cartQuantity =
     items.find((item) => item.id === product?.id)?.quantity || 0;
-
 
   if (loading) {
     return (
@@ -259,12 +260,13 @@ const formatPrice = (price) => {
     );
   }
 
-
   if (!product) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-neutral-800 mb-4">Product not found</h1>
+          <h1 className="text-2xl font-bold text-neutral-800 mb-4">
+            Product not found
+          </h1>
           <Link to="/products" className="btn-primary">
             Back to Products
           </Link>
@@ -273,20 +275,20 @@ const formatPrice = (price) => {
     );
   }
 
-
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Debug info in development */}
-      {process.env.NODE_ENV === 'development' && (
+      {process.env.NODE_ENV === "development" && (
         <div className="fixed bottom-4 left-4 bg-black text-white p-2 rounded text-xs z-50 max-w-xs">
-          <p><strong>Debug Info:</strong></p>
+          <p>
+            <strong>Debug Info:</strong>
+          </p>
           <p>Product ID: {product?.id}</p>
           <p>Images found: {productImages.length}</p>
           <p>Selected: {selectedImageIndex}</p>
           <p>Current src: {productImages[selectedImageIndex]}</p>
         </div>
       )}
-
 
       {/* Breadcrumb */}
       <section className="bg-white border-b border-neutral-100">
@@ -310,7 +312,6 @@ const formatPrice = (price) => {
           </nav>
         </div>
       </section>
-
 
       {/* Product Detail Section */}
       <section className="py-12">
@@ -336,10 +337,16 @@ const formatPrice = (price) => {
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
                       transition={{ duration: 0.5 }}
-                      onLoad={() => console.log('Image loaded:', productImages[selectedImageIndex])}
+                      onLoad={() =>
+                        console.log(
+                          "Image loaded:",
+                          productImages[selectedImageIndex]
+                        )
+                      }
                       onError={(e) => {
-                        console.error('Image failed to load:', e.target.src);
-                        e.target.src = 'https://via.placeholder.com/400x400/f3f4f6/9ca3af?text=Image+Not+Found';
+                        console.error("Image failed to load:", e.target.src);
+                        e.target.src =
+                          "https://via.placeholder.com/400x400/f3f4f6/9ca3af?text=Image+Not+Found";
                       }}
                     />
                   </AnimatePresence>
@@ -347,14 +354,23 @@ const formatPrice = (price) => {
                   // Fallback when no images are available
                   <div className="w-full h-full bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">
                     <div className="text-center text-neutral-500">
-                      <svg className="w-16 h-16 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      <svg
+                        className="w-16 h-16 mx-auto mb-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
                       </svg>
                       <p className="text-sm">No image available</p>
                     </div>
                   </div>
                 )}
-
 
                 {/* Image Navigation - Only show if multiple images */}
                 {productImages.length > 1 && (
@@ -406,7 +422,6 @@ const formatPrice = (price) => {
                       </svg>
                     </button>
 
-
                     {/* Image indicator dots */}
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                       {productImages.map((_, index) => (
@@ -414,7 +429,9 @@ const formatPrice = (price) => {
                           key={index}
                           onClick={() => setSelectedImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-colors ${
-                            selectedImageIndex === index ? 'bg-white' : 'bg-white/50'
+                            selectedImageIndex === index
+                              ? "bg-white"
+                              : "bg-white/50"
                           }`}
                           aria-label={`Go to image ${index + 1}`}
                         />
@@ -422,7 +439,6 @@ const formatPrice = (price) => {
                     </div>
                   </>
                 )}
-
 
                 {/* Badges */}
                 <div className="absolute top-4 left-4 space-y-2">
@@ -438,7 +454,6 @@ const formatPrice = (price) => {
                   )}
                 </div>
               </div>
-
 
               {/* Thumbnail Gallery - Only show if multiple images */}
               {productImages.length > 1 && (
@@ -459,8 +474,12 @@ const formatPrice = (price) => {
                         alt={`${product.name} thumbnail ${index + 1}`}
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          console.error('Thumbnail failed to load:', e.target.src);
-                          e.target.src = 'https://via.placeholder.com/100x100/f3f4f6/9ca3af?text=404';
+                          console.error(
+                            "Thumbnail failed to load:",
+                            e.target.src
+                          );
+                          e.target.src =
+                            "https://via.placeholder.com/100x100/f3f4f6/9ca3af?text=404";
                         }}
                       />
                     </button>
@@ -468,7 +487,6 @@ const formatPrice = (price) => {
                 </div>
               )}
             </motion.div>
-
 
             {/* Product Info */}
             <motion.div
@@ -495,7 +513,6 @@ const formatPrice = (price) => {
                   </div>
                 </div>
 
-
                 {/* Title and Price on same line */}
                 <div className="flex justify-between items-center mb-4">
                   <h1 className="text-3xl md:text-4xl font-heading font-bold text-neutral-800 flex-1 mr-4">
@@ -503,7 +520,9 @@ const formatPrice = (price) => {
                   </h1>
                   <div className="text-right">
                     <span className="text-3xl font-bold text-primary-600">
-                      {product && product.price ? formatPrice(product.price) : "Price not available"}
+                      {product && product.price
+                        ? formatPrice(product.price)
+                        : "Price not available"}
                     </span>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-lg text-neutral-500 line-through">
@@ -516,7 +535,6 @@ const formatPrice = (price) => {
                   </div>
                 </div>
               </div>
-
 
               {/* Stock Status */}
               <div className="flex items-center gap-2">
@@ -540,7 +558,6 @@ const formatPrice = (price) => {
                   ({product.stock} available)
                 </span>
               </div>
-
 
               {/* Guest User Notice for Order Placement */}
               {!isAuthenticated && (
@@ -573,7 +590,6 @@ const formatPrice = (price) => {
                 </div>
               )}
 
-
               {/* Quick Features */}
               <div className="grid grid-cols-3 gap-4 p-4 bg-primary-50 rounded-lg">
                 <div className="text-center">
@@ -595,7 +611,6 @@ const formatPrice = (price) => {
                   </span>
                 </div>
               </div>
-
 
               {/* Quantity Selector */}
               <div className="space-y-4">
@@ -650,7 +665,6 @@ const formatPrice = (price) => {
                   </div>
                 </div>
 
-
                 {/* Cart Status */}
                 {isInCart && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -674,9 +688,8 @@ const formatPrice = (price) => {
                 )}
               </div>
 
-
               {/* Action Buttons */}
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col">
                 <button
                   onClick={handleAddToCart}
                   disabled={product.stock === 0 || isAddingToCart}
@@ -701,48 +714,25 @@ const formatPrice = (price) => {
                     }to Cart - ${formatPrice(product.price * quantity)}`
                   )}
                 </button>
-
-
-                <div className="grid grid-cols-2 gap-3">
-                  <button className="py-3 px-4 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
-                    <div className="flex items-center justify-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                        />
-                      </svg>
-                      Wishlist
-                    </div>
-                  </button>
-                  <button className="py-3 px-4 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
-                    <div className="flex items-center justify-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                        />
-                      </svg>
-                      Share
-                    </div>
-                  </button>
-                </div>
+                <button className="py-3 px-4 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
+                  <div className="flex items-center justify-center gap-2">
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                      />
+                    </svg>
+                    Share
+                  </div>
+                </button>
               </div>
-
 
               {/* Delivery Info */}
               <div className="border border-neutral-200 rounded-lg p-4 space-y-3">
@@ -799,7 +789,6 @@ const formatPrice = (price) => {
         </div>
       </section>
 
-
       {/* Product Details Tabs */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
@@ -827,7 +816,6 @@ const formatPrice = (price) => {
                 ))}
               </nav>
             </div>
-
 
             {/* Tab Content */}
             <AnimatePresence mode="wait">
@@ -871,7 +859,6 @@ const formatPrice = (price) => {
                   </div>
                 )}
 
-
                 {activeTab === "ingredients" && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold text-neutral-800">
@@ -879,14 +866,16 @@ const formatPrice = (price) => {
                     </h3>
                     <div className="bg-neutral-50 rounded-lg p-4">
                       <p className="text-neutral-700">
-                        Premium quality {product.category ? product.category.toLowerCase() : 'ingredient'},
-                        natural spices, and traditional seasonings. No
+                        Premium quality{" "}
+                        {product.category
+                          ? product.category.toLowerCase()
+                          : "ingredient"}
+                        , natural spices, and traditional seasonings. No
                         artificial preservatives or additives.
                       </p>
                     </div>
                   </div>
                 )}
-
 
                 {activeTab === "nutrition" && (
                   <div className="space-y-4">
@@ -906,7 +895,6 @@ const formatPrice = (price) => {
                     </div>
                   </div>
                 )}
-
 
                 {activeTab === "reviews" && (
                   <div className="space-y-6">
@@ -951,7 +939,6 @@ const formatPrice = (price) => {
         </div>
       </section>
 
-
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="py-16 bg-neutral-50">
@@ -971,7 +958,6 @@ const formatPrice = (price) => {
               </p>
             </motion.div>
 
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard
@@ -987,6 +973,5 @@ const formatPrice = (price) => {
     </div>
   );
 };
-
 
 export default ProductDetail;
