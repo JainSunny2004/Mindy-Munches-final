@@ -21,6 +21,9 @@ import Sattu from "./pages/Sattu";
 import Makhana from "./pages/Makhana";
 import AboutUs from "./pages/AboutUs";
 import Story from "./pages/Story";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import RefundPolicy from "./pages/RefundPolicy";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -240,6 +243,48 @@ function App() {
                   transition={pageTransition}
                 >
                   <Story />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/terms-and-conditions"
+              element={
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <TermsAndConditions />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/privacy-policy"
+              element={
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <PrivacyPolicy />
+                </motion.div>
+              }
+            />
+            <Route
+              path="/returns"
+              element={
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <RefundPolicy />
                 </motion.div>
               }
             />
