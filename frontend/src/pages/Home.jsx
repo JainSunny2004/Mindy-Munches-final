@@ -224,11 +224,10 @@ const Home = () => {
         setLoading(true);
 
         // Helper function to check if we're in Netlify environment
-        const isNetlify = () => {
+        const isVercel = () => {
           return (
-            window.location.hostname.includes("netlify.app") ||
-            window.location.hostname.includes("netlify.com") ||
-            import.meta.env.VITE_NETLIFY_DEPLOY === "true"
+            window.location.hostname.includes("vercel.app") ||
+            import.meta.env.VITE_VERCEL_DEPLOY === "true"
           );
         };
 
@@ -236,7 +235,7 @@ const Home = () => {
 
         try {
           // First, try to fetch from API
-          if (import.meta.env.VITE_API_URL && !isNetlify()) {
+          if (import.meta.env.VITE_API_URL && !isVercel()) {
             const [apiProductsResponse, apiTestimonialsResponse] =
               await Promise.all([
                 fetch(`${import.meta.env.VITE_API_URL}/products`),

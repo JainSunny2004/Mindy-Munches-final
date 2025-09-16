@@ -302,7 +302,7 @@ const forgotPassword = async (req, res) => {
     await user.save({ validateBeforeSave: false });
 
     // Create the reset URL pointing to the frontend
-    const resetURL = `http://localhost:5173/reset-password/${resetToken}`;
+    const resetURL = `http://localhost:5173/reset-password/${resetToken}`; //--------------------Change needed (obviously) --------------------------
 
     // Email user with the reset URL
     await emailService.sendPasswordResetEmail(user.email, resetURL);
