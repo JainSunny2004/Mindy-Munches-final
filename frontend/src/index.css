@@ -1,0 +1,593 @@
+/* --- Full Inter font-face definitions --- */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2)
+    format("woff2");
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F,
+    U+FE2E-FE2F;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZthiI2B.woff2)
+    format("woff2");
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZNhiI2B.woff2)
+    format("woff2");
+  unicode-range: U+1F00-1FFF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZxhiI2B.woff2)
+    format("woff2");
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1,
+    U+03A3-03FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZBhiI2B.woff2)
+    format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1,
+    U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329,
+    U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZFhiI2B.woff2)
+    format("woff2");
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF,
+    U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: url(https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZ9hiA.woff2)
+    format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* --- Import Brand Fonts: Colama Regular, GoBold, Chaloops, Cooper Std --- */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+/* Add Colama Regular font - if available through Google Fonts or use fallback */
+/* For now, using closest Google Font alternatives */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Oswald:wght@400;500;600;700&family=Cooper+Hewitt:wght@400;500;600;700&display=swap");
+
+/* --- Tailwind v4 core import --- */
+@import "tailwindcss";
+
+/* --- Theme block with Mindy Munchs Brand Colors and Fonts --- */
+@theme {
+  /* Brand Typography */
+  --font-family-sans: Inter, system-ui, sans-serif;
+  --font-family-heading: "Oswald", sans-serif; /* GoBold alternative */
+  --font-family-brand: "Playfair Display", serif; /* Colama Regular alternative */
+  --font-family-accent: "Cooper Hewitt", sans-serif; /* Cooper Std alternative */
+
+  /* Mindy Munchs Brand Colors - Based on your packaging */
+  
+  /* Primary Brand Colors (Neutral/Brown tones from packaging) */
+  --color-primary-50: #fafaf9;
+  --color-primary-100: #f5f5f4;
+  --color-primary-200: #e7e5e4;
+  --color-primary-300: #d6d3d1;
+  --color-primary-400: #a8a29e;
+  --color-primary-500: #78716c;  /* Main brand brown */
+  --color-primary-600: #57534e;  /* Darker brand brown */
+  --color-primary-700: #44403c;
+  --color-primary-800: #292524;
+  --color-primary-900: #1c1917;
+
+  /* Secondary Colors - Makhana Blue/Teal (from packaging) */
+  --color-secondary-50: #f0f9ff;
+  --color-secondary-100: #e0f2fe;
+  --color-secondary-200: #bae6fd;
+  --color-secondary-300: #7dd3fc;
+  --color-secondary-400: #38bdf8;
+  --color-secondary-500: #5f8aa4;  /* Makhana blue from packaging */
+  --color-secondary-600: #0284c7;
+  --color-secondary-700: #0369a1;
+  --color-secondary-800: #075985;
+  --color-secondary-900: #0c4a6e;
+
+  /* Accent Colors - Sattu Yellow/Green (from packaging) */
+  --color-accent-50: #fefce8;
+  --color-accent-100: #fef9c3;
+  --color-accent-200: #fef08a;
+  --color-accent-300: #fde047;
+  --color-accent-400: #facc15;
+  --color-accent-500: #d6dd28;  /* Sattu bright yellow from packaging */
+  --color-accent-600: #ca8a04;
+  --color-accent-700: #a16207;
+  --color-accent-800: #854d0e;
+  --color-accent-900: #713f12;
+
+  /* Neutral colors with warm undertones */
+  --color-neutral-50: #fafaf9;
+  --color-neutral-100: #f4f4f3;
+  --color-neutral-200: #e9e9e7;
+  --color-neutral-300: #d6d6d3;
+  --color-neutral-400: #aeaea7;
+  --color-neutral-500: #8a8a80;
+  --color-neutral-600: #6f6f65;
+  --color-neutral-700: #5a5a52;
+  --color-neutral-800: #4a4a44;
+  --color-neutral-900: #3f3f3a;
+
+  /* Container settings */
+  --container-center: true;
+  --container-padding: 1rem;
+  --container-screen-sm: 640px;
+  --container-screen-md: 768px;
+  --container-screen-lg: 1024px;
+  --container-screen-xl: 1280px;
+
+  /* Brand animations */
+  --animate-fade-in: fadeIn 0.5s ease-in-out;
+  --animate-slide-up: slideUp 0.6s ease-out;
+  --animate-bounce-gentle: bounceGentle 2s infinite;
+  --animate-brand-pulse: brandPulse 3s ease-in-out infinite;
+}
+
+/* --- Base styles --- */
+@layer base {
+  /* HTML5 reset and basic structure */
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    height: 100%;
+    font-size: 16px;
+  }
+
+  body {
+    font-family: var(--font-family-sans);
+    line-height: 1.6;
+    height: 100%;
+    background-color: #ffffff;
+    color: var(--color-neutral-800);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Basic HTML elements */
+  a {
+    color: var(--color-primary-600);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  a:hover {
+    color: var(--color-primary-700);
+  }
+
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  button {
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: inherit;
+  }
+
+  input, textarea, select {
+    font-family: inherit;
+    font-size: inherit;
+  }
+
+  ul, ol {
+    list-style: none;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  /* Brand typography */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-family: var(--font-family-brand);
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+  }
+
+  h3 {
+    font-size: clamp(1.25rem, 2.5vw, 2rem);
+  }
+
+  /* Brand headings */
+  .brand-heading {
+    font-family: var(--font-family-brand);
+    font-weight: 400;
+  }
+
+  .product-heading {
+    font-family: var(--font-family-heading);
+    font-weight: 700;
+  }
+
+  .accent-text {
+    font-family: var(--font-family-accent);
+  }
+
+  /* Paragraphs */
+  p {
+    margin-bottom: 1rem;
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Custom scrollbar for cart dropdown */
+  .cart-dropdown-scroll::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .cart-dropdown-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 2px;
+  }
+
+  .cart-dropdown-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 2px;
+  }
+
+  .cart-dropdown-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .horizontal-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+  }
+
+  .horizontal-scroll::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-primary-500);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .slider::-webkit-slider-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: #e2e8f0;
+    border-radius: 4px;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--color-primary-500);
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+
+  .slider::-moz-range-track {
+    width: 100%;
+    height: 8px;
+    cursor: pointer;
+    background: #e2e8f0;
+    border-radius: 4px;
+    border: none;
+  }
+}
+
+/* --- Custom Keyframes --- */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes brandPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+/* --- Component classes with brand styling --- */
+@layer components {
+  .btn-primary {
+    @apply bg-primary-500 hover:bg-primary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-300;
+    font-family: var(--font-family-heading);
+  }
+
+  .btn-secondary {
+    @apply bg-secondary-500 hover:bg-secondary-600 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-secondary-300;
+    font-family: var(--font-family-heading);
+  }
+
+  .btn-accent {
+    @apply bg-accent-500 hover:bg-accent-600 text-neutral-900 font-bold py-3 px-6 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-accent-300;
+    font-family: var(--font-family-heading);
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 border border-neutral-100;
+  }
+
+  .card-makhana {
+    @apply bg-gradient-to-br from-secondary-50 to-secondary-100 border-secondary-200;
+  }
+
+  .card-sattu {
+    @apply bg-gradient-to-br from-accent-50 to-accent-100 border-accent-200;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-3 border border-neutral-300 rounded-lg focus:ring-2 focus:ring-primary-300 focus:border-primary-500 outline-none transition-colors duration-200;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Brand-specific components */
+  .brand-logo {
+    font-family: var(--font-family-brand);
+    font-weight: 400;
+    color: var(--color-primary-700);
+  }
+
+  .product-badge-makhana {
+    @apply bg-secondary-100 text-secondary-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  .product-badge-sattu {
+    @apply bg-accent-100 text-accent-800 px-3 py-1 rounded-full text-sm font-medium;
+  }
+
+  /* Hide X overlay utility */
+  .hide-x-overlay {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hide-x-overlay::before,
+  .hide-x-overlay::after {
+    display: none !important;
+  }
+
+  .overlay-hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
+  .hide-close-btn {
+    display: none !important;
+  }
+
+  .x-overlay,
+  .close-overlay,
+  [data-dismiss],
+  .overlay-close {
+    display: none !important;
+  }
+}
+
+/* --- Utility classes --- */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+
+  .animate-brand-pulse {
+    animation: brandPulse 3s ease-in-out infinite;
+  }
+
+  /* Brand color utilities */
+  .text-brand {
+    color: var(--color-primary-700);
+  }
+
+  .text-makhana {
+    color: var(--color-secondary-600);
+  }
+
+  .text-sattu {
+    color: var(--color-accent-600);
+  }
+
+  .bg-brand {
+    background-color: var(--color-primary-500);
+  }
+
+  .bg-makhana {
+    background-color: var(--color-secondary-500);
+  }
+
+  .bg-sattu {
+    background-color: var(--color-accent-500);
+  }
+
+  /* Hide X overlay utilities */
+  .no-x-overlay {
+    position: relative;
+  }
+
+  .no-x-overlay .overlay,
+  .no-x-overlay .x-button,
+  .no-x-overlay .close-btn {
+    display: none !important;
+  }
+
+  /* Hide scrollbar utilities */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Accessibility-friendly hidden */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Typography utilities */
+  .font-brand {
+    font-family: var(--font-family-brand);
+  }
+
+  .font-heading {
+    font-family: var(--font-family-heading);
+  }
+
+  .font-accent {
+    font-family: var(--font-family-accent);
+  }
+}
+
+/* --- Product-specific styles --- */
+@layer components {
+  .makhana-theme {
+    @apply bg-gradient-to-br from-secondary-50 via-white to-secondary-100;
+  }
+
+  .sattu-theme {
+    @apply bg-gradient-to-br from-accent-50 via-white to-accent-100;
+  }
+
+  .hero-makhana {
+    background: linear-gradient(135deg, 
+      rgba(95, 138, 164, 0.1) 0%, 
+      rgba(255, 255, 255, 0.9) 50%, 
+      rgba(95, 138, 164, 0.1) 100%);
+  }
+
+  .hero-sattu {
+    background: linear-gradient(135deg, 
+      rgba(214, 221, 40, 0.1) 0%, 
+      rgba(255, 255, 255, 0.9) 50%, 
+      rgba(214, 221, 40, 0.1) 100%);
+  }
+
+  /* Brand pattern backgrounds */
+  .pattern-dots {
+    background-image: radial-gradient(circle, var(--color-primary-200) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .pattern-subtle {
+    background-image: linear-gradient(45deg, transparent 40%, var(--color-neutral-50) 50%, transparent 60%);
+    background-size: 40px 40px;
+  }
+}

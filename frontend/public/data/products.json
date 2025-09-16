@@ -1,0 +1,83 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Sweet Tomato Makhana",
+      "price": 4650,
+      "category": "Makhana",
+      "description": "Rich in protein, low on the glycemic index, and free from additives. Our DIY packs empower families to season it their way—mild, spicy, bold—while consciously controlling fat and flavor.",
+      "images": [
+        "/tomato-main.png",
+        "/tomato.png"
+      ],
+      "stock": 50,
+      "featured": true
+    },
+    {
+      "id": 2,
+      "name": "Minty Masala Makhana",
+      "price": 7700,
+      "category": "Makhana",
+      "description": "A refreshing twist on traditional fox nuts with aromatic mint and spices. Perfect for health-conscious snacking.",
+      "images": [
+        "/minty-masala.png",
+        "/minty.png"
+      ],
+      "stock": 30,
+      "featured": true
+    },
+    {
+      "id": 3,
+      "name": "Classic Sattu",
+      "price": 7999,
+      "category": "Sattu",
+      "description": "The humble roasted gram flour, a powerhouse of plant protein, fiber, and minerals. Whether sipped, stuffed, or dough, its versatility fits right into the modern kitchen.",
+      "images": [
+        "/classic-sattu.png",
+        "/classic-sattu-background.png"
+      ],
+      "stock": 25,
+      "featured": false
+    },
+    {
+      "id": 4,
+      "name": "Masala Sattu",
+      "price": 21700,
+      "category": "Sattu",
+      "description": "Traditional sattu enhanced with aromatic spices. Supporting digestion, energy, and immunity for growing children, active adults, and busy mornings alike.",
+      "images": [
+        "/masala_sattu.png",
+        "/masala_sattu_background.png"
+      ],
+      "stock": 40,
+      "featured": false
+    },
+    {
+      "id": 5,
+      "name": "Jaljira Sattu",
+      "price": 21700,
+      "category": "Sattu",
+      "description": "Naturally sweetened sattu with jaggery. A perfect balance of nutrition and taste for the whole family.",
+      "images": [
+        "/jaljira-sattu.png",
+        "/jaljira-sattu-background.png"
+      ],
+      "stock": 35,
+      "featured": true
+    },
+    {
+      "id": 6,
+      "name": "Peri Peri Makhana",
+      "price": 4890,
+      "category": "Makhana",
+      "description": "Spicy peri peri flavored fox nuts for those who love a kick in their healthy snacks. Guilt-free crunch without compromise.",
+      "images": [
+        "/PERI-PERI-makhana.png",
+        "/peri.png"
+        
+      ],
+      "stock": 20,
+      "featured": true
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "testimonials": [
+    {
+      "id": 1,
+      "name": "Priya Sharma",
+      "location": "Mumbai, Maharashtra",
+      "quote": "Finally found healthy snacks that my kids actually love! The Makhana varieties are perfect for our family movie nights. No more guilt about snacking.",
+      "rating": 3,
+      "verified": true,
+      "product": "Sweet Tomato Makhana"
+    },
+    {
+      "id": 2,
+      "name": "Rajesh Kumar",
+      "location": "Delhi, NCR",
+      "quote": "As someone always on the go, Sattu has been a game-changer. It's filling, nutritious, and keeps me energized throughout my busy workdays.",
+      "rating": 5,
+      "verified": true,
+      "product": "Sattu Original"
+    },
+    {
+      "id": 3,
+      "name": "Anjali Patel",
+      "location": "Ahmedabad, Gujarat",
+      "quote": "The customization aspect is brilliant! Being able to adjust the spice level means everyone in our joint family can enjoy the same product their own way.",
+      "rating": 4,
+      "verified": true,
+      "product": "Peri Peri Makhana"
+    },
+    {
+      "id": 4,
+      "name": "Dr. Meera Reddy",
+      "location": "Bangalore, Karnataka",
+      "quote": "As a nutritionist, I'm impressed by the quality and nutritional value. I recommend Mindy Munchs to my clients who want healthy snacking options.",
+      "rating": 5,
+      "verified": false,
+      "product": "Masala Sattu"
+    },
+    {
+      "id": 5,
+      "name": "Arjun Singh",
+      "location": "Pune, Maharashtra",
+      "quote": "Great post-workout snack! The protein content in these products helps with my fitness goals while satisfying my taste buds.",
+      "rating": 4,
+      "verified": true,
+      "product": "Minty Masala Makhana"
+    },
+    {
+      "id": 6,
+      "name": "Kavya Iyer",
+      "location": "Chennai, Tamil Nadu",
+      "quote": "Traditional foods made convenient for modern life. My grandmother approves of the authentic taste, and I love the hassle-free preparation.",
+      "rating": 5,
+      "verified": true,
+      "product": "Jaggery Sattu"
+    }
+  ]
+}
