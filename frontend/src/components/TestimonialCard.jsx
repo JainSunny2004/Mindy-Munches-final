@@ -18,11 +18,6 @@ const TestimonialCard = ({ testimonial, index }) => {
         ))}
       </div>
       
-      {/* Quote */}
-      <blockquote className="text-neutral-700 mb-6 leading-relaxed italic">
-        "{testimonial.quote}"
-      </blockquote>
-      
       {/* Author Info */}
       <div className="flex items-center">
         <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center mr-4">
@@ -33,6 +28,7 @@ const TestimonialCard = ({ testimonial, index }) => {
         <div>
           <h4 className="font-semibold text-neutral-800">{testimonial.name}</h4>
           <p className="text-sm text-neutral-500">{testimonial.location}</p>
+          <p className="text-sm text-neutral-500">{testimonial.message}</p>
           {testimonial.verified && (
             <div className="flex items-center mt-1">
               <span className="text-green-500 text-xs mr-1">✓</span>

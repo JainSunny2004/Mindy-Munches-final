@@ -223,77 +223,25 @@ const Home = () => {
       try {
         setLoading(true);
 
-        // Helper function to check if we're in Netlify environment
-        const isVercel = () => {
-          return (
-            window.location.hostname.includes("vercel.app") ||
-            import.meta.env.VITE_VERCEL_DEPLOY === "true"
-          );
-        };
-
-        let productsResponse, testimonialsResponse;
-
-        try {
-          // First, try to fetch from API
-          if (import.meta.env.VITE_API_URL && !isVercel()) {
-            const [apiProductsResponse, apiTestimonialsResponse] =
-              await Promise.all([
-                fetch(`${import.meta.env.VITE_API_URL}/products`),
-                fetch(`${import.meta.env.VITE_API_URL}/testimonials`),
-              ]);
-
-            if (apiProductsResponse.ok && apiTestimonialsResponse.ok) {
-              productsResponse = apiProductsResponse;
-              testimonialsResponse = apiTestimonialsResponse;
-            } else {
-              throw new Error("API responses not ok");
-            }
-          } else {
-            throw new Error(
-              "API not available or Netlify environment detected"
-            );
-          }
-        } catch (apiError) {
-          console.warn(
-            "API failed, falling back to public data:",
-            apiError.message
-          );
-
-          // Fallback to public data files
-          try {
-            const [publicProductsResponse, publicTestimonialsResponse] =
-              await Promise.all([
-                fetch("/data/products.json"),
-                fetch("/data/testimonials.json"),
-              ]);
-
-            if (publicProductsResponse.ok && publicTestimonialsResponse.ok) {
-              productsResponse = publicProductsResponse;
-              testimonialsResponse = publicTestimonialsResponse;
-            } else {
-              throw new Error("Public data files not found");
-            }
-          } catch (publicError) {
-            console.warn(
-              "Public data failed, using imported data:",
-              publicError.message
-            );
-
-            // Final fallback to imported JSON data
-            // NEW - using empty fallback since public data is fetched via HTTP
-            const allProducts = [];
-            setProducts(allProducts.slice(0, 6));
-            setBestsellers(allProducts.slice(0, 3));
-            setTestimonials([]);
-            return;
-          }
+        if (!import.meta.env.VITE_API_URL) {
+          throw new Error("API URL is not defined");
         }
 
-        // Parse the successful response
-        const productsData = await productsResponse.json();
-        const testimonialsData = await testimonialsResponse.json();
+        // Try fetching from the API
+        const [apiProductsResponse, apiTestimonialsResponse] =
+          await Promise.all([
+            fetch(`${import.meta.env.VITE_API_URL}/products`),
+            fetch(`${import.meta.env.VITE_API_URL}/testimonials`),
+          ]);
 
-        // Handle different API response structures
+        if (!apiProductsResponse.ok || !apiTestimonialsResponse.ok) {
+          throw new Error("API responses not ok");
+        }
+
+        const productsData = await apiProductsResponse.json();
+        const testimonialsData = await apiTestimonialsResponse.json();
+
+        // Process products data
         let allProducts = [];
         if (
           productsData &&
@@ -301,17 +249,14 @@ const Home = () => {
           productsData.data &&
           Array.isArray(productsData.data.products)
         ) {
-          // Backend API response: { success: true, data: { products: [...] } }
           allProducts = productsData.data.products;
         } else if (productsData && Array.isArray(productsData.products)) {
-          // JSON file structure: { products: [...] }
           allProducts = productsData.products;
         } else if (Array.isArray(productsData)) {
-          // Direct array response: [...]
           allProducts = productsData;
         }
 
-        // Handle testimonials
+        // Process testimonials data
         let allTestimonials = [];
         if (
           testimonialsData &&
@@ -335,11 +280,32 @@ const Home = () => {
       } catch (error) {
         console.error("Error loading data:", error);
 
-        // Ultimate fallback to imported data
-        const allProducts = [];
-        setProducts(allProducts.slice(0, 6));
-        setBestsellers(allProducts.slice(0, 3));
-        setTestimonials([]);
+        // Optional: fallback to public data files
+        try {
+          const [publicProductsResponse, publicTestimonialsResponse] =
+            await Promise.all([
+              fetch("/data/products.json"),
+              fetch("/data/testimonials.json"),
+            ]);
+
+          if (publicProductsResponse.ok && publicTestimonialsResponse.ok) {
+            const productsData = await publicProductsResponse.json();
+            const testimonialsData = await publicTestimonialsResponse.json();
+
+            setProducts(productsData.products.slice(0, 6));
+            setBestsellers(productsData.products.slice(0, 3));
+            setTestimonials(testimonialsData.testimonials);
+          } else {
+            throw new Error("Public data files not found");
+          }
+        } catch (publicError) {
+          console.warn("Public data fallback failed:", publicError.message);
+
+          // Final fallback — empty arrays
+          setProducts([]);
+          setBestsellers([]);
+          setTestimonials([]);
+        }
       } finally {
         setLoading(false);
       }
