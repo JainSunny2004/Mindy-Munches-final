@@ -7,6 +7,7 @@ import useAuthStore from "../store/authStore";
 import Loader from "../components/Loader";
 import ProductCard from "../components/ProductCard";
 
+
 const ProductDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,30 +20,34 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
 
+
   const { addItem, items } = useCartStore();
   const { isAuthenticated } = useAuthStore();
+
 
   // Helper function to resolve image URLs
   const resolveImageUrl = (imagePath) => {
     if (!imagePath) return '';
-    
+
     // External URLs (start with http)
     if (imagePath.startsWith('http')) {
       return imagePath;
     }
-    
+
     // Local images - ensure they start with /
     if (!imagePath.startsWith('/')) {
       return `/${imagePath}`;
     }
-    
+
     return imagePath;
   };
+
 
   useEffect(() => {
     const loadProduct = async () => {
       try {
         setLoading(true);
+
 
         // Helper function to check if we're in Netlify environment
         const isNetlify = () => {
@@ -51,8 +56,10 @@ const ProductDetail = () => {
                  import.meta.env.VITE_NETLIFY_DEPLOY === 'true';
         };
 
+
         let product, products = [];
         let response;
+
 
         try {
           // First, try to fetch from API
@@ -62,10 +69,11 @@ const ProductDetail = () => {
               headers: { 'Accept': 'application/json' }
             });
 
+
             if (response.ok) {
               const apiResponse = await response.json();
               console.log('Product fetched from API:', apiResponse);
-  
+
               // Handle API response structure properly
               if (apiResponse.success && apiResponse.data && apiResponse.data.product) {
                 product = apiResponse.data.product;  // Extract product from nested structure
@@ -74,6 +82,7 @@ const ProductDetail = () => {
               } else {
                 product = apiResponse;
               }
+
 
 
               try {
@@ -96,12 +105,13 @@ const ProductDetail = () => {
           }
         } catch (apiError) {
           console.warn('API failed, falling back to products.json:', apiError.message);
-          
+
           // Fallback to products.json file
           try {
             response = await fetch('/data/products.json', {
               headers: { 'Accept': 'application/json' }
             });
+
 
             if (response.ok) {
               const data = await response.json();
@@ -117,6 +127,7 @@ const ProductDetail = () => {
           }
         }
 
+
         // Product not found
         if (!product) {
           console.error(`Product with ID ${id} not found`);
@@ -124,7 +135,9 @@ const ProductDetail = () => {
           return;
         }
 
+
         setProduct(product);
+
 
         // Related products logic
         let related = [];
@@ -135,6 +148,7 @@ const ProductDetail = () => {
         }
         setRelatedProducts(related);
 
+
       } catch (error) {
         console.error('Error loading product:', error);
         navigate('/products');
@@ -143,13 +157,15 @@ const ProductDetail = () => {
       }
     };
 
+
     loadProduct();
   }, [id, navigate]);
+
 
   // Enhanced image handling with proper URL resolution
   const productImages = useMemo(() => {
     if (!product) return [];
-    
+
     // Priority: images array > single image > empty array
     if (product.images && Array.isArray(product.images) && product.images.length > 0) {
       // Filter and resolve image paths - handle both string and object formats
@@ -176,14 +192,17 @@ const ProductDetail = () => {
   return [];
 }
 
-    
+
+
     return [];
   }, [product]);
+
 
   // Reset selected image index when product changes
   useEffect(() => {
     setSelectedImageIndex(0);
   }, [product?.id]);
+
 
 const formatPrice = (price) => {
   const numPrice = Number(price);
@@ -196,24 +215,17 @@ const formatPrice = (price) => {
 
 
 
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      navigate("/auth", {
-        state: {
-          from: location.pathname,
-          message: "Please login to add products to your cart",
-          productName: product.name,
-        },
-      });
-      return;
-    }
 
+  const handleAddToCart = async () => {
+    // Allow adding to cart for both authenticated and guest users
     setIsAddingToCart(true);
+
 
     // Add multiple quantities
     for (let i = 0; i < quantity; i++) {
       addItem(product);
     }
+
 
     // Show success notification
     const notification = document.createElement("div");
@@ -227,14 +239,17 @@ const formatPrice = (price) => {
       }
     }, 3000);
 
+
     setTimeout(() => {
       setIsAddingToCart(false);
     }, 500);
   };
 
+
   const isInCart = items.some((item) => item.id === product?.id);
   const cartQuantity =
     items.find((item) => item.id === product?.id)?.quantity || 0;
+
 
   if (loading) {
     return (
@@ -243,6 +258,7 @@ const formatPrice = (price) => {
       </div>
     );
   }
+
 
   if (!product) {
     return (
@@ -257,6 +273,7 @@ const formatPrice = (price) => {
     );
   }
 
+
   return (
     <div className="min-h-screen bg-neutral-50">
       {/* Debug info in development */}
@@ -269,6 +286,7 @@ const formatPrice = (price) => {
           <p>Current src: {productImages[selectedImageIndex]}</p>
         </div>
       )}
+
 
       {/* Breadcrumb */}
       <section className="bg-white border-b border-neutral-100">
@@ -292,6 +310,7 @@ const formatPrice = (price) => {
           </nav>
         </div>
       </section>
+
 
       {/* Product Detail Section */}
       <section className="py-12">
@@ -335,6 +354,7 @@ const formatPrice = (price) => {
                     </div>
                   </div>
                 )}
+
 
                 {/* Image Navigation - Only show if multiple images */}
                 {productImages.length > 1 && (
@@ -386,6 +406,7 @@ const formatPrice = (price) => {
                       </svg>
                     </button>
 
+
                     {/* Image indicator dots */}
                     <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
                       {productImages.map((_, index) => (
@@ -402,6 +423,7 @@ const formatPrice = (price) => {
                   </>
                 )}
 
+
                 {/* Badges */}
                 <div className="absolute top-4 left-4 space-y-2">
                   {product.featured && (
@@ -416,6 +438,7 @@ const formatPrice = (price) => {
                   )}
                 </div>
               </div>
+
 
               {/* Thumbnail Gallery - Only show if multiple images */}
               {productImages.length > 1 && (
@@ -446,6 +469,7 @@ const formatPrice = (price) => {
               )}
             </motion.div>
 
+
             {/* Product Info */}
             <motion.div
               className="space-y-6"
@@ -471,6 +495,7 @@ const formatPrice = (price) => {
                   </div>
                 </div>
 
+
                 {/* Title and Price on same line */}
                 <div className="flex justify-between items-center mb-4">
                   <h1 className="text-3xl md:text-4xl font-heading font-bold text-neutral-800 flex-1 mr-4">
@@ -491,6 +516,7 @@ const formatPrice = (price) => {
                   </div>
                 </div>
               </div>
+
 
               {/* Stock Status */}
               <div className="flex items-center gap-2">
@@ -515,10 +541,11 @@ const formatPrice = (price) => {
                 </span>
               </div>
 
-              {/* Authentication Notice */}
+
+              {/* Guest User Notice for Order Placement */}
               {!isAuthenticated && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-yellow-700">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div className="flex items-center gap-2 text-blue-700">
                     <svg
                       className="w-5 h-5"
                       fill="none"
@@ -533,18 +560,19 @@ const formatPrice = (price) => {
                       />
                     </svg>
                     <span className="text-sm font-medium">
-                      Please{" "}
+                      You can add items to cart as a guest. Please{" "}
                       <Link
                         to="/auth"
-                        className="underline hover:text-yellow-800"
+                        className="underline hover:text-blue-800"
                       >
                         login
                       </Link>{" "}
-                      to add products to your cart
+                      to place orders and track your purchases.
                     </span>
                   </div>
                 </div>
               )}
+
 
               {/* Quick Features */}
               <div className="grid grid-cols-3 gap-4 p-4 bg-primary-50 rounded-lg">
@@ -567,6 +595,7 @@ const formatPrice = (price) => {
                   </span>
                 </div>
               </div>
+
 
               {/* Quantity Selector */}
               <div className="space-y-4">
@@ -621,6 +650,7 @@ const formatPrice = (price) => {
                   </div>
                 </div>
 
+
                 {/* Cart Status */}
                 {isInCart && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
@@ -644,6 +674,7 @@ const formatPrice = (price) => {
                 )}
               </div>
 
+
               {/* Action Buttons */}
               <div className="space-y-3">
                 <button
@@ -652,8 +683,6 @@ const formatPrice = (price) => {
                   className={`w-full py-4 px-6 rounded-lg font-medium text-lg transition-colors duration-200 ${
                     product.stock === 0
                       ? "bg-neutral-300 text-neutral-500 cursor-not-allowed"
-                      : !isAuthenticated
-                      ? "bg-yellow-500 hover:bg-yellow-600 text-white"
                       : isAddingToCart
                       ? "bg-primary-400 text-white"
                       : "bg-primary-500 hover:bg-primary-600 text-white"
@@ -666,14 +695,13 @@ const formatPrice = (price) => {
                     </div>
                   ) : product.stock === 0 ? (
                     "Out of Stock"
-                  ) : !isAuthenticated ? (
-                    "Add to Cart"
                   ) : (
                     `Add ${
                       quantity > 1 ? `${quantity} ` : ""
                     }to Cart - ${formatPrice(product.price * quantity)}`
                   )}
                 </button>
+
 
                 <div className="grid grid-cols-2 gap-3">
                   <button className="py-3 px-4 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
@@ -714,6 +742,7 @@ const formatPrice = (price) => {
                   </button>
                 </div>
               </div>
+
 
               {/* Delivery Info */}
               <div className="border border-neutral-200 rounded-lg p-4 space-y-3">
@@ -770,6 +799,7 @@ const formatPrice = (price) => {
         </div>
       </section>
 
+
       {/* Product Details Tabs */}
       <section className="py-12 bg-white">
         <div className="container mx-auto px-4">
@@ -797,6 +827,7 @@ const formatPrice = (price) => {
                 ))}
               </nav>
             </div>
+
 
             {/* Tab Content */}
             <AnimatePresence mode="wait">
@@ -840,6 +871,7 @@ const formatPrice = (price) => {
                   </div>
                 )}
 
+
                 {activeTab === "ingredients" && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold text-neutral-800">
@@ -854,6 +886,7 @@ const formatPrice = (price) => {
                     </div>
                   </div>
                 )}
+
 
                 {activeTab === "nutrition" && (
                   <div className="space-y-4">
@@ -873,6 +906,7 @@ const formatPrice = (price) => {
                     </div>
                   </div>
                 )}
+
 
                 {activeTab === "reviews" && (
                   <div className="space-y-6">
@@ -917,6 +951,7 @@ const formatPrice = (price) => {
         </div>
       </section>
 
+
       {/* Related Products */}
       {relatedProducts.length > 0 && (
         <section className="py-16 bg-neutral-50">
@@ -936,6 +971,7 @@ const formatPrice = (price) => {
               </p>
             </motion.div>
 
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct, index) => (
                 <ProductCard
@@ -951,5 +987,6 @@ const formatPrice = (price) => {
     </div>
   );
 };
+
 
 export default ProductDetail;
