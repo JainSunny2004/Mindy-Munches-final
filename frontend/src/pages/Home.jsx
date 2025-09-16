@@ -223,7 +223,14 @@ const Home = () => {
       try {
         setLoading(true);
 
-        if (!import.meta.env.VITE_API_URL) {
+        const isVercel = () => {
+          return (
+            window.location.hostname.includes("vercel.app") ||
+            import.meta.env.VITE_VERCEL_DEPLOY === "true"
+          );
+        };
+
+        if (!import.meta.env.VITE_API_URL || !isVercel()) {
           throw new Error("API URL is not defined");
         }
 
