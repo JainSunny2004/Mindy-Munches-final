@@ -79,7 +79,7 @@ const ProductCard = ({
   }, [productImages, isHovered]);
   
   const formatPrice = (price) => {
-    return `₹ ${(price / 100).toLocaleString("en-IN")}`;
+    return `₹ ${(price ).toLocaleString("en-IN")}`;
   };
   
   // Updated: Allow guests to add to cart
