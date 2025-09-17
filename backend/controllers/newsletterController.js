@@ -70,16 +70,13 @@ exports.subscribeToNewsletter = async (req, res) => {
   }
 };
 
-// Send newsletter to all subscribers
+// Other functions remain the same...
 exports.sendNewsletter = async (req, res) => {
   try {
     const { subject, htmlContent } = req.body;
-
-    // Get subscribed emails from both User and Guest models
     const users = await User.find({ newsletterSubscribed: true });
     const guests = await Guest.find({ newsletterSubscribed: true });
 
-    // Combine all emails into a single array
     const subscriberEmails = [
       ...users.map(user => user.email),
       ...guests.map(guest => guest.email)
@@ -92,14 +89,12 @@ exports.sendNewsletter = async (req, res) => {
       });
     }
 
-    // Send emails in batches to avoid overwhelming the email service
     const batchSize = 10;
     for (let i = 0; i < subscriberEmails.length; i += batchSize) {
       const batch = subscriberEmails.slice(i, i + batchSize);
       await Promise.all(
         batch.map(email => emailService.sendNewsletterEmail(email, subject, htmlContent))
       );
-      // Small delay between batches
       await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
@@ -117,50 +112,6 @@ exports.sendNewsletter = async (req, res) => {
   }
 };
 
-// Send new product notification to all subscribers
-exports.sendNewProductNotification = async (product) => {
-  try {
-    // Get all subscribers
-    const users = await User.find({ newsletterSubscribed: true });
-    const guests = await Guest.find({ newsletterSubscribed: true });
-
-    const allSubscribers = [
-      ...users.map(user => ({ email: user.email, unsubscribeToken: user.unsubscribeToken })),
-      ...guests.map(guest => ({ email: guest.email, unsubscribeToken: guest.unsubscribeToken }))
-    ];
-
-    if (allSubscribers.length === 0) {
-      console.log('No subscribers found for new product notification');
-      return;
-    }
-
-    // Send emails in batches
-    const batchSize = 10;
-    for (let i = 0; i < allSubscribers.length; i += batchSize) {
-      const batch = allSubscribers.slice(i, i + batchSize);
-      await Promise.all(
-        batch.map(subscriber =>
-          emailService.sendNewProductNotification(
-            subscriber.email,
-            product,
-            subscriber.unsubscribeToken
-          )
-        )
-      );
-      // Small delay between batches
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    console.log(`New product notification sent to ${allSubscribers.length} subscribers`);
-    return { success: true, count: allSubscribers.length };
-
-  } catch (error) {
-    console.error('Failed to send new product notifications:', error);
-    return { success: false, error: error.message };
-  }
-};
-
-// Unsubscribe from newsletter
 exports.unsubscribeFromNewsletter = async (req, res) => {
   try {
     const { token } = req.query;
@@ -172,7 +123,6 @@ exports.unsubscribeFromNewsletter = async (req, res) => {
       });
     }
 
-    // Check both User and Guest models
     const user = await User.findOne({ unsubscribeToken: token });
     const guest = await Guest.findOne({ unsubscribeToken: token });
 
@@ -203,7 +153,6 @@ exports.unsubscribeFromNewsletter = async (req, res) => {
   }
 };
 
-// Get newsletter statistics
 exports.getNewsletterStats = async (req, res) => {
   try {
     const userSubscribers = await User.countDocuments({ newsletterSubscribed: true });

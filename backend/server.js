@@ -81,7 +81,7 @@ app.use('/api/admin', adminRoutes);
 
 app.use('/api', videoTestimonialRoutes); // Add this line
 
-app.use('/api/newsletter', newsLetterRoutes)
+app.use('/api/newsletter', newsLetterRoutes);
 
 
 // Health check endpoint
