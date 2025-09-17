@@ -29,7 +29,7 @@ const Footer = () => {
     setSubscriptionMessage('');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}newsletter/subscribe`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/newsletter/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
