@@ -339,7 +339,8 @@ const updateProduct = async (req, res) => {
         }, {}) : undefined,
       isActive: req.body.isActive !== undefined ? Boolean(req.body.isActive) : undefined,
       isFeatured: req.body.isFeatured !== undefined ? Boolean(req.body.isFeatured) : undefined,
-      isOrganic: req.body.isOrganic !== undefined ? Boolean(req.body.isOrganic) : undefined
+      isOrganic: req.body.isOrganic !== undefined ? Boolean(req.body.isOrganic) : undefined,
+      isBestseller: req.body.isBestseller !== undefined ? Boolean(req.body.isBestseller) : undefined
     };
 
     // Remove undefined values
