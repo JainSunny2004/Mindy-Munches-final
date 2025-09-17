@@ -16,6 +16,8 @@ const adminRoutes = require('./routes/admin');
 // In backend/server.js
 const videoTestimonialRoutes = require('./routes/videoTestimonials');
 
+const newsletterRoutes = require('./routes/newsLetter');
+
 
 
 
@@ -79,6 +81,7 @@ app.use('/api/testimonials', testimonialRoutes); // ← Add this line
 app.use('/api/admin', adminRoutes);
 
 app.use('/api', videoTestimonialRoutes); // Add this line
+app.use('/api/newsletter', newsletterRoutes);
 
 
 // Health check endpoint

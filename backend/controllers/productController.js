@@ -1,6 +1,10 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
 
+const User = require('../models/User');
+const Guest = require('../models/Guest');
+const emailService = require('../services/emailService');
+
 // Get all products with filtering, sorting, and pagination
 const getAllProducts = async (req, res) => {
   try {
@@ -271,6 +275,48 @@ const createProduct = async (req, res) => {
     await product.save();
     
     console.log('Product created successfully:', product._id);
+    try {
+    // Send newsletter to all subscribers about the new product
+    const users = await User.find({ newsletterSubscribed: true }).select('email unsubscribeToken');
+    const guests = await Guest.find({ newsletterSubscribed: true }).select('email unsubscribeToken');
+    
+    const allSubscribers = [
+        ...users.map(user => ({ email: user.email, token: user.unsubscribeToken })),
+        ...guests.map(guest => ({ email: guest.email, token: guest.unsubscribeToken }))
+    ];
+
+    if (allSubscribers.length > 0) {
+        console.log(`Sending new product notification to ${allSubscribers.length} subscribers`);
+        
+        // Send emails in batches to avoid overwhelming the email service
+        const batchSize = 10;
+        for (let i = 0; i < allSubscribers.length; i += batchSize) {
+            const batch = allSubscribers.slice(i, i + batchSize);
+            
+            await Promise.all(
+                batch.map(subscriber => 
+                    emailService.sendNewProductNotification(
+                        subscriber.email, 
+                        product, 
+                        subscriber.token
+                    ).catch(error => {
+                        console.error(`Failed to send email to ${subscriber.email}:`, error);
+                    })
+                )
+            );
+            
+            // Add small delay between batches
+            if (i + batchSize < allSubscribers.length) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        console.log('New product notifications sent successfully');
+    }
+} catch (emailError) {
+    console.error('Error sending new product notifications:', emailError);
+    // Don't fail the product creation if email sending fails
+}
     
     res.status(201).json({
       success: true,

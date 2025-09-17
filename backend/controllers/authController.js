@@ -284,41 +284,47 @@ const changePassword = async (req, res) => {
 };
 
 // Forgot password
+// controllers/authController.js
 const forgotPassword = async (req, res) => {
-   let user;
+  let user;
   try {
     const { email } = req.body;
-    user = await User.findOne({ email });
 
+    // 1️⃣ Find user
+    user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'User not found with this email address'
-      });
+      }); // [web:22]
     }
 
-    // Generate and save the password reset token
-    const resetToken = user.getResetPasswordToken();
+    // 2️⃣ Create reset token & save without validation
+    const resetToken = user.getResetPasswordToken();        // hashed & expires handled in the model
     await user.save({ validateBeforeSave: false });
 
-    // Create the reset URL pointing to the frontend
-    const resetURL = `http://localhost:5173/reset-password/${resetToken}`; //--------------------Change needed (obviously) --------------------------
+    // 3️⃣ Build URL → prefer env var, fall back to request origin
+    const baseURL = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+    const resetURL = `${baseURL}/reset-password/${resetToken}`; // [web:25]
 
-    // Email user with the reset URL
+    // 4️⃣ Send e-mail (emailService has a dev-mode logger)
     await emailService.sendPasswordResetEmail(user.email, resetURL);
 
-    res.json({
+    return res.json({
       success: true,
       message: 'Password reset instructions sent to your email'
     });
   } catch (error) {
     console.error('Forgot password error:', error);
+
+    // Roll back token fields if anything fails
     if (user) {
       user.passwordResetToken = undefined;
       user.passwordResetExpires = undefined;
       await user.save({ validateBeforeSave: false });
     }
-    res.status(500).json({
+
+    return res.status(500).json({
       success: false,
       message: 'Failed to process forgot password request',
       error: error.message
