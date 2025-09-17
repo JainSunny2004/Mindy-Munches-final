@@ -230,7 +230,7 @@ const Home = () => {
           );
         };
 
-        if (!import.meta.env.VITE_API_URL || !isVercel()) {
+        if (!import.meta.env.VITE_API_URL) {
           throw new Error("API URL is not defined");
         }
 

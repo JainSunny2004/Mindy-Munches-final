@@ -13,39 +13,62 @@ const ProductCard = ({
   const { addItem } = useCartStore();
   const { isAuthenticated } = useAuthStore();
   const navigate = useNavigate();
-  
+
   // State for size selection and image hovering
   const [selectedSize, setSelectedSize] = useState("500gm");
   const [isHovered, setIsHovered] = useState(false);
-  
+
   // Map prices for sizes - assuming product.price is base price for 500gm
   const priceMap = {
     "500gm": product.price,
     "1kg": product.price * 2,
   };
-  
+
   // Helper function to resolve image URLs
   const resolveImageUrl = (imagePath) => {
     if (!imagePath) return "";
+
     // External URLs (start with http)
     if (imagePath.startsWith("http")) {
       return imagePath;
     }
+
     // Local images - ensure they start with /
     if (!imagePath.startsWith("/")) {
       return `/${imagePath}`;
     }
+
     return imagePath;
   };
-  
+
   // Get all valid images
   const productImages = useMemo(() => {
+    // Priority: images array > single image > empty array
+  //   if (
+  //     product.images &&
+  //     Array.isArray(product.images) &&
+  //     product.images.length > 0
+  //   ) {
+  //     // Filter and resolve image paths
+  //     return product.images
+  //       .filter((img) => img && img.trim() !== "")
+  //       .map((img) => resolveImageUrl(img));
+  //   } else if (
+  //     product.image &&
+  //     typeof product.image === "string" &&
+  //     product.image.trim() !== ""
+  //   ) {
+  //     return [resolveImageUrl(product.image)];
+  //   }
+
+  //   return [];
+  // }, [product]);
     if (
       product.images &&
       Array.isArray(product.images) &&
       product.images.length > 0
     ) {
-      // Handle both string and object image formats
+      // CHANGE: Handle both string and object image formats
       return product.images
         .filter((img) => {
           if (typeof img === 'string') return img.trim() !== "";
@@ -64,50 +87,62 @@ const ProductCard = ({
     ) {
       return [resolveImageUrl(product.image)];
     }
+
     return [];
   }, [product]);
-  
+
   // Get display image - show second image on hover if available, otherwise first
   const displayImage = useMemo(() => {
     if (productImages.length === 0) return null;
+
     // If hovering and multiple images exist, show second image
     if (isHovered && productImages.length > 1) {
       return productImages[1];
     }
+
     // Default to first image
     return productImages[0];
   }, [productImages, isHovered]);
-  
+
   const formatPrice = (price) => {
     return `₹ ${(price).toLocaleString("en-IN")}`;
   };
-  
-  // Updated: Allow guests to add to cart
+
   const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    try {
-      await addItem(product);
-    } catch (error) {
-      // Error notification already handled in cartStore
-      console.error('Add to cart failed:', error);
-    }
-  };
+  e.preventDefault();
+  e.stopPropagation();
   
+  if (!isAuthenticated) {
+    navigate("/auth", {
+      state: {
+        from: `/products/${product.id || product._id}`,
+        message: "Please login to add products to your cart",
+      },
+    });
+    return;
+  }
+
+  try {
+    await addItem(product);
+  } catch (error) {
+    // Error notification already handled in cartStore
+    console.error('Add to cart failed:', error);
+  }
+};
+
   const handleCardClick = () => {
     navigate(`/products/${product.id}`);
   };
-  
+
   const bestsellerRanks = {
     1: { rank: 1, badge: "Best Seller", sales: "2k+ Reviews" },
     2: { rank: 2, badge: "Top Choice", sales: "1.5k+ Reviews" },
     3: { rank: 3, badge: "Trending", sales: "1k+ Reviews" },
     4: { rank: 4, badge: "Best Value", sales: "150+ sold this month" },
   };
-  
+
   const bestseller = bestsellerRanks[product.id];
-  
+
   return (
     <motion.div
       className="bg-white rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer border border-gray-100 max-w-sm mx-auto"
@@ -162,12 +197,15 @@ const ProductCard = ({
               }}
               onError={(e) => {
                 console.warn("Product image failed to load, using fallback:", e.target.src);
+                // Prevent infinite loop by checking if already using fallback
                 if (!e.target.src.includes('data:image')) {
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial, sans-serif' font-size='16' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
+                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect width='300' height='300' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='central' text-anchor='middle' font-family='Arial, sans-serif' font-size='16' fill='%239ca3af'%3ENo Image%3C/text%3E%3C/svg%3E";
                 }
               }}
+
             />
           ) : (
+            // Fallback when no image is available
             <motion.div
               className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center"
               initial={{ opacity: 0, scale: 0.8 }}
@@ -193,8 +231,8 @@ const ProductCard = ({
             </motion.div>
           )}
         </AnimatePresence>
-        
-        {/* Best Seller Badge */}
+
+        {/* Best Seller Badge with Faster Animation */}
         {product.isBestseller && (
           <motion.div
             className="absolute top-3 left-3 bg-green-600 text-white text-xs px-3 py-1 rounded-full font-medium flex items-center gap-1 z-10 backdrop-blur-sm"
@@ -225,8 +263,8 @@ const ProductCard = ({
             </motion.svg>
           </motion.div>
         )}
-        
-        {/* Featured Badge */}
+
+        {/* Featured Badge with Faster Animation */}
         {product.isFeatured && !product.isBestseller && (
           <motion.div
             className="absolute top-3 left-3 bg-primary-500 text-white text-xs px-3 py-1 rounded-full font-medium z-10 backdrop-blur-sm"
@@ -241,8 +279,8 @@ const ProductCard = ({
             Featured
           </motion.div>
         )}
-        
-        {/* Stock Badge */}
+
+        {/* Stock Badge with Faster Animation */}
         {product.stock <= 5 && (
           <motion.div
             className={`absolute top-3 left-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium z-10 backdrop-blur-sm ${
@@ -261,8 +299,8 @@ const ProductCard = ({
             Low Stock
           </motion.div>
         )}
-        
-        {/* Wishlist Heart Icon */}
+
+        {/* Wishlist Heart Icon with Faster Animation */}
         <motion.div
           className="absolute top-3 right-3 w-8 h-8 bg-white rounded-full shadow-sm flex items-center justify-center cursor-pointer z-10 backdrop-blur-sm"
           onClick={(e) => e.stopPropagation()}
@@ -304,7 +342,7 @@ const ProductCard = ({
           </motion.svg>
         </motion.div>
       </div>
-      
+
       {/* Product Details */}
       <motion.div
         className="p-4"
@@ -316,7 +354,7 @@ const ProductCard = ({
           ease: [0.25, 0.46, 0.45, 0.94],
         }}
       >
-        {/* Product Name and Price */}
+        {/* Product Name and Price on Same Line */}
         <div className="flex justify-between items-center mb-2">
           <motion.h3
             className="font-semibold text-gray-800 text-base leading-tight group-hover:text-primary-600 transition-colors duration-300 truncate flex-1 mr-2"
@@ -340,7 +378,7 @@ const ProductCard = ({
             {formatPrice(priceMap[selectedSize])}
           </motion.span>
         </div>
-        
+
         {/* Rating and Reviews */}
         <motion.div
           className="flex items-center gap-2 mb-3"
@@ -379,7 +417,7 @@ const ProductCard = ({
             {bestseller?.sales || "2k+ Reviews"}
           </span>
         </motion.div>
-        
+
         {/* Stock Status */}
         <motion.div
           className="flex items-center gap-2 mb-3"
@@ -417,7 +455,7 @@ const ProductCard = ({
               : "Out of Stock"}
           </span>
         </motion.div>
-        
+
         {/* Size Selector */}
         <motion.div
           className="mb-4"
@@ -446,7 +484,7 @@ const ProductCard = ({
             <option value="1kg">1000gm</option>
           </motion.select>
         </motion.div>
-        
+
         {/* Add to Cart Button */}
         <motion.button
           onClick={(e) => {
