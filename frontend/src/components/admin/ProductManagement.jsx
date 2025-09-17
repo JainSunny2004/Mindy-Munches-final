@@ -259,7 +259,6 @@ const ProductManagement = () => {
       isOrganic: product.isOrganic || false,
       origin: product.origin || 'India',
       isBestseller: product.isBestseller || false, // <-- Add this line
-      origin: product.origin || 'India'
     })
     setShowAddModal(true)
   }
