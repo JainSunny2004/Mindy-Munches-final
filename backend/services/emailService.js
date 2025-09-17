@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 
-const transporter = nodemailer.createTransport({
+const transporter = nodemailer.createTransport({ // FIXED: createTransport, not createTransporter
   service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
@@ -11,12 +11,11 @@ const transporter = nodemailer.createTransport({
 // Newsletter email function
 exports.sendNewsletterEmail = async (to, subject, htmlContent) => {
   const mailOptions = {
-    from: '"Mindy Munchs Newsletter" <' + process.env.EMAIL_USER + '>',
+    from: `"Mindy Munchs Newsletter" <${process.env.EMAIL_USER}>`,
     to,
     subject,
     html: htmlContent
   };
-  
   await transporter.sendMail(mailOptions);
 };
 
@@ -25,79 +24,87 @@ exports.sendNewProductNotification = async (subscriberEmail, product, unsubscrib
   const unsubscribeUrl = `${process.env.FRONTEND_URL}/unsubscribe?token=${unsubscribeToken}`;
   
   const htmlContent = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="utf-8">
-      <title>New Product Alert - Mindy Munches</title>
-      <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { text-align: center; margin-bottom: 30px; }
-        .logo { max-width: 200px; height: auto; }
-        .product-card { border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; }
-        .product-image { width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 8px; }
-        .price { font-size: 24px; color: #e67e22; font-weight: bold; }
-        .original-price { text-decoration: line-through; color: #999; margin-left: 10px; }
-        .btn { display: inline-block; padding: 12px 30px; background: #e67e22; color: white; text-decoration: none; border-radius: 5px; margin: 15px 0; }
-        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
-        .unsubscribe { margin-top: 20px; font-size: 11px; color: #999; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <div class="header">
-          <img src="${process.env.FRONTEND_URL}/Mindy_Munches_Logo-01.png" alt="Mindy Munches" class="logo">
-          <h2>🎉 Exciting News! New Product Alert</h2>
-        </div>
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #e67e22;">New Product Alert!</h2>
+      </div>
+      
+      <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
+        <h3 style="color: #333; margin-top: 0;">${product.name}</h3>
+        <p style="color: #666; line-height: 1.6;">${product.description}</p>
         
-        <div class="product-card">
-          <img src="${process.env.FRONTEND_URL}${product.images?.url || '/placeholder-image.jpg'}" alt="${product.name}" class="product-image">
-          
-          <h3>${product.name}</h3>
-          <p>${product.description}</p>
-          
-          <div class="price">
-            ₹${product.price}
-            ${product.originalPrice ? `<span class="original-price">₹${product.originalPrice}</span>` : ''}
-          </div>
-          
-          ${product.isOrganic ? '<span style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">🌱 ORGANIC</span>' : ''}
-          
-          <br>
-          <a href="${process.env.FRONTEND_URL}/product/${product._id}" class="btn">Shop Now</a>
+        <div style="margin: 20px 0;">
+          <span style="font-size: 24px; color: #e67e22; font-weight: bold;">₹${product.price}</span>
+          ${product.originalPrice ? `<span style="text-decoration: line-through; color: #999; margin-left: 10px;">₹${product.originalPrice}</span>` : ''}
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <p>Thank you for being part of the Mindy Munches family!</p>
-          <p>Made with ❤️ in India</p>
-        </div>
-        
-        <div class="footer">
-          <p><strong>Mindy Munches</strong></p>
-          <p>Ghaziabad, Uttar Pradesh, India</p>
-          <p>Email: Mindymunchs@gmail.com</p>
-        </div>
-        
-        <div class="unsubscribe">
-          <p>Don't want to receive these updates? <a href="${unsubscribeUrl}">Unsubscribe here</a></p>
+          <a href="${process.env.FRONTEND_URL}/product/${product._id}" 
+             style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+             Shop Now
+          </a>
         </div>
       </div>
-    </body>
-    </html>
+      
+      <div style="text-align: center; margin: 30px 0; color: #666;">
+        <p>Thank you for being part of the Mindy Munches family!</p>
+        <p style="font-size: 14px;">Made with love in India</p>
+      </div>
+      
+      <div style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+        <p><strong>Mindy Munches</strong></p>
+        <p>Ghaziabad, Uttar Pradesh, India</p>
+        <p>Email: Mindymunchs@gmail.com</p>
+        <p><a href="${unsubscribeUrl}" style="color: #999;">Don't want to receive these updates? Unsubscribe here</a></p>
+      </div>
+    </div>
   `;
 
-  await this.sendNewsletterEmail(subscriberEmail, `🆕 New Product: ${product.name} - Mindy Munches`, htmlContent);
+  await this.sendNewsletterEmail(subscriberEmail, `New Product: ${product.name}`, htmlContent);
 };
 
-// Existing reset password function
-exports.sendResetPasswordEmail = async (email, resetToken) => {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: email,
-    subject: 'Password Reset Request',
-    text: `Click the link below to reset your password: ${resetUrl}\n\nThe link is valid for 15 minutes.`
-  };
-  await transporter.sendMail(mailOptions);
+// Send welcome email to new subscribers
+exports.sendWelcomeEmail = async (subscriberEmail, name) => {
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #e67e22;">Welcome to Mindy Munches!</h2>
+      </div>
+      
+      <div style="padding: 20px;">
+        <p>Hi ${name || 'there'}!</p>
+        
+        <p>Thank you for subscribing to our newsletter! You'll be the first to know about:</p>
+        
+        <ul style="color: #666; line-height: 1.8;">
+          <li>🆕 New product launches</li>
+          <li>💰 Exclusive discounts and offers</li>
+          <li>🌿 Health and wellness tips</li>
+          <li>📚 Organic food guides</li>
+        </ul>
+        
+        <p>We promise to send only valuable content and never spam your inbox.</p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${process.env.FRONTEND_URL}" 
+             style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+             Start Shopping
+          </a>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0; color: #666;">
+        <p>Welcome to the healthy lifestyle journey!</p>
+        <p style="font-size: 14px;">Made with love in India</p>
+      </div>
+      
+      <div style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+        <p><strong>Mindy Munches</strong></p>
+        <p>Ghaziabad, Uttar Pradesh, India</p>
+        <p>Email: Mindymunchs@gmail.com</p>
+      </div>
+    </div>
+  `;
+
+  await this.sendNewsletterEmail(subscriberEmail, 'Welcome to Mindy Munches Newsletter! 🌿', htmlContent);
 };

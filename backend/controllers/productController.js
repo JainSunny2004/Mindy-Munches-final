@@ -281,7 +281,12 @@ const createProduct = async (req, res) => {
 
     // Send newsletter notification for new product (only if product is active and featured)
     if (product.isActive && product.isFeatured) {
-      await sendProductNotificationEmail(product, 'new');
+      try {
+        await sendProductNotificationEmail(product, 'new');
+      } catch (emailError) {
+        console.error('Failed to send newsletter notification:', emailError);
+        // Don't fail the product creation if email fails
+      }
     } else {
       console.log(`Newsletter not triggered (isActive: ${product.isActive}, isFeatured: ${product.isFeatured})`);
     }
@@ -359,7 +364,12 @@ const updateProduct = async (req, res) => {
     );
 
     if (shouldSendNotification) {
-      await sendProductNotificationEmail(updatedProduct, 'update');
+      try {
+        await sendProductNotificationEmail(updatedProduct, 'update');
+      } catch (emailError) {
+        console.error('Failed to send newsletter notification:', emailError);
+        // Don't fail the product update if email fails
+      }
     } else {
       console.log('Newsletter not triggered - no significant changes or product not featured');
     }

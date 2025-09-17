@@ -74,6 +74,9 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/testimonials', testimonialRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api', videoTestimonialRoutes);
+// Add this line after line 87 (after videoTestimonialRoutes)
+//app.use('/api/newsletter', require('./routes/newsLetter'));
+
 
 // ✅ NEWSLETTER ROUTES (Built-in - No external file needed)
 // Newsletter subscription route

@@ -50,7 +50,7 @@ exports.subscribeToNewsletter = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Successfully subscribed to newsletter! 🎉'
+      message: 'Successfully subscribed to newsletter!'
     });
 
   } catch (error) {
