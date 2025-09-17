@@ -40,7 +40,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
-app.use('/api/newsletter', require('./routes/newsLetter'));
 
 
 // Security middleware
@@ -81,6 +80,8 @@ app.use('/api/testimonials', testimonialRoutes); // ← Add this line
 app.use('/api/admin', adminRoutes);
 
 app.use('/api', videoTestimonialRoutes); // Add this line
+
+app.use('/api/newsletter', newsLetterRoutes)
 
 
 // Health check endpoint

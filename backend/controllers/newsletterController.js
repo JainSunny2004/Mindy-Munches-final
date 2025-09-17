@@ -139,10 +139,10 @@ exports.sendNewProductNotification = async (product) => {
     for (let i = 0; i < allSubscribers.length; i += batchSize) {
       const batch = allSubscribers.slice(i, i + batchSize);
       await Promise.all(
-        batch.map(subscriber => 
+        batch.map(subscriber =>
           emailService.sendNewProductNotification(
-            subscriber.email, 
-            product, 
+            subscriber.email,
+            product,
             subscriber.unsubscribeToken
           )
         )
