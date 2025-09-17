@@ -1,9 +1,96 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
-
 const Guest = require('../models/Guest');
 const User = require('../models/User');
+const nodemailer = require('nodemailer');
 
+// Email sending helper function
+const sendProductNotificationEmail = async (product, type = 'new') => {
+  try {
+    console.log('Sending product notification email...');
+    
+    // Get all newsletter subscribers
+    const users = await User.find({ newsletterSubscribed: true }).select('email');
+    const guests = await Guest.find({ newsletterSubscribed: true }).select('email');
+    
+    const subscriberEmails = [
+      ...users.map(user => user.email),
+      ...guests.map(guest => guest.email)
+    ];
+    
+    console.log(`Newsletter would be sent to ${subscriberEmails.length} subscribers:`);
+    subscriberEmails.forEach(email => console.log(`   - ${email}`));
+    console.log(`Product: ${product.name} (Rs.${product.price})`);
+
+    // Actually send emails if subscribers exist
+    if (subscriberEmails.length > 0) {
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_APP_PASSWORD
+        }
+      });
+
+      const isUpdate = type === 'update';
+      const subject = isUpdate ? `Updated Product: ${product.name}` : `New Product: ${product.name}`;
+      const actionText = isUpdate ? 'Product Updated!' : 'New Product Alert!';
+      
+      // Send email to each subscriber
+      for (const email of subscriberEmails) {
+        try {
+          await transporter.sendMail({
+            from: `"Mindy Munches" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: subject,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                  <h2 style="color: #e67e22;">${actionText}</h2>
+                </div>
+                
+                <div style="border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                  <h3 style="color: #333; margin-top: 0;">${product.name}</h3>
+                  <p style="color: #666; line-height: 1.6;">${product.description}</p>
+                  
+                  <div style="margin: 20px 0;">
+                    <span style="font-size: 24px; color: #e67e22; font-weight: bold;">Rs.${product.price}</span>
+                    ${product.originalPrice ? `<span style="text-decoration: line-through; color: #999; margin-left: 10px;">Rs.${product.originalPrice}</span>` : ''}
+                  </div>
+                  
+                  ${product.isOrganic ? '<span style="background: #27ae60; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px;">ORGANIC</span>' : ''}
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${process.env.FRONTEND_URL}/product/${product._id}" 
+                       style="background: #e67e22; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                       Shop Now
+                    </a>
+                  </div>
+                </div>
+                
+                <div style="text-align: center; margin: 30px 0; color: #666;">
+                  <p>Thank you for being part of the Mindy Munches family!</p>
+                  <p style="font-size: 14px;">Made with love in India</p>
+                </div>
+                
+                <div style="border-top: 1px solid #eee; padding-top: 20px; font-size: 12px; color: #999; text-align: center;">
+                  <p><strong>Mindy Munches</strong></p>
+                  <p>Ghaziabad, Uttar Pradesh, India</p>
+                  <p>Email: Mindymunchs@gmail.com</p>
+                </div>
+              </div>
+            `
+          });
+          console.log(`Email sent successfully to: ${email}`);
+        } catch (emailSendError) {
+          console.error(`Failed to send email to ${email}:`, emailSendError.message);
+        }
+      }
+    }
+  } catch (emailError) {
+    console.error('Newsletter notification error:', emailError);
+  }
+};
 
 // Get all products with filtering, sorting, and pagination
 const getAllProducts = async (req, res) => {
@@ -47,15 +134,16 @@ const getAllProducts = async (req, res) => {
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    // Execute query - FIXED: Use correct populate path
+    // Execute query
     const products = await Product.find(filter)
       .sort(sortObj)
       .skip(skip)
       .limit(parseInt(limit))
-      .populate('ratings.reviews.user', 'name');
+      .populate('reviews', 'rating comment user createdAt');
 
     // Get total count for pagination
-    const total = await Product.countDocuments(filter);
+    const totalProducts = await Product.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / parseInt(limit));
 
     res.json({
       success: true,
@@ -63,135 +151,31 @@ const getAllProducts = async (req, res) => {
         products,
         pagination: {
           currentPage: parseInt(page),
-          totalPages: Math.ceil(total / parseInt(limit)),
-          totalProducts: total,
-          hasNextPage: skip + products.length < total,
-          hasPrevPage: parseInt(page) > 1
+          totalPages,
+          totalProducts,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1
         }
       }
     });
+
   } catch (error) {
     console.error('Get products error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch products',
-      error: error.message
+      message: 'Failed to fetch products'
     });
-  }
-};
-
-// Get featured products
-const getFeaturedProducts = async (req, res) => {
-  try {
-    const products = await Product.find({
-      isFeatured: true,
-      isActive: true
-    })
-      .sort({ createdAt: -1 })
-      .limit(8);
-
-    res.json({
-      success: true,
-      data: {
-        products
-      }
-    });
-  } catch (error) {
-    console.error('Get featured products error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch featured products',
-      error: error.message
-    });
-  }
-};
-
-// Get product categories
-const getCategories = async (req, res) => {
-  try {
-    const categories = await Product.distinct('category', { isActive: true });
-
-    res.json({
-      success: true,
-      data: {
-        categories
-      }
-    });
-  } catch (error) {
-    console.error('Get categories error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to fetch categories',
-      error: error.message
-    });
-  }
-};
-
-// Search products
-const searchProducts = async (req, res) => {
-  try {
-    const { q, category, limit = 10 } = req.query;
-
-    if (!q) {
-      return res.status(400).json({
-        success: false,
-        message: 'Search query is required'
-      });
-    }
-
-    const filter = {
-      isActive: true,
-      $text: { $search: q }
-    };
-
-    if (category) {
-      filter.category = category;
-    }
-
-    const products = await Product.find(filter)
-      .sort({ score: { $meta: 'textScore' } })
-      .limit(parseInt(limit));
-
-    res.json({
-      success: true,
-      data: {
-        products,
-        query: q
-      }
-    });
-  } catch (error) {
-    console.error('Search products error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Search failed',
-      error: error.message
-    });
-  }
-};
-
-// New function to get bestsellers
-const getBestsellers = async (req, res) => {
-  try {
-    const products = await Product.find({
-      isBestseller: true,
-      isActive: true,
-    }).sort({ 'ratings.count': -1 }).limit(3);
-
-    res.json({
-     success: true,
-      data: { products }
-    });
-  } catch (error) {
-    console.error('Get bestsellers error:', error);
-    res.status(500).json({ success: false, message: 'Failed to fetch bestsellers' });
   }
 };
 
 // Get single product by ID
 const getProductById = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id)
-      .populate('ratings.reviews.user', 'name');
+    const { id } = req.params;
+    
+    const product = await Product.findById(id)
+      .populate('reviews', 'rating comment user createdAt')
+      .populate('reviews.user', 'name');
 
     if (!product) {
       return res.status(404).json({
@@ -202,16 +186,68 @@ const getProductById = async (req, res) => {
 
     res.json({
       success: true,
-      data: {
-        product
-      }
+      data: { product }
     });
+
   } catch (error) {
     console.error('Get product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch product',
-      error: error.message
+      message: 'Failed to fetch product'
+    });
+  }
+};
+
+// Get featured products
+const getFeaturedProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 8;
+    
+    const products = await Product.find({
+      isActive: true,
+      isFeatured: true
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate('reviews', 'rating');
+
+    res.json({
+      success: true,
+      data: { products }
+    });
+
+  } catch (error) {
+    console.error('Get featured products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch featured products'
+    });
+  }
+};
+
+// Get bestseller products
+const getBestsellerProducts = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 8;
+    
+    const products = await Product.find({
+      isActive: true,
+      isBestseller: true
+    })
+    .sort({ createdAt: -1 })
+    .limit(limit)
+    .populate('reviews', 'rating');
+
+    res.json({
+      success: true,
+      data: { products }
+    });
+
+  } catch (error) {
+    console.error('Get bestseller products error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch bestseller products'
     });
   }
 };
@@ -222,6 +258,7 @@ const createProduct = async (req, res) => {
     console.log('Create product request received:', req.body);
     console.log('User role:', req.user?.role);
 
+    // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -231,41 +268,10 @@ const createProduct = async (req, res) => {
       });
     }
 
-    // Ensure images array has at least one image with proper structure
-    if (!req.body.images || !Array.isArray(req.body.images) || req.body.images.length === 0) {
-      req.body.images = [{
-        url: '/placeholder-image.jpg',
-        alt: req.body.name || 'Product image',
-        isPrimary: true
-      }];
-    }
-
-    // Ensure at least one image is marked as primary
-    const hasPrimary = req.body.images.some(img => img.isPrimary);
-    if (!hasPrimary && req.body.images.length > 0) {
-      req.body.images.isPrimary = true;
-    }
-
-    // Create product with processed data
+    // Create product data
     const productData = {
       ...req.body,
-      price: parseFloat(req.body.price),
-      originalPrice: req.body.originalPrice ? parseFloat(req.body.originalPrice) : null,
-      stock: parseInt(req.body.stock),
-      weight: req.body.weight && req.body.weight.value ? {
-        value: parseFloat(req.body.weight.value),
-        unit: req.body.weight.unit || 'g'
-      } : undefined,
-      nutritionalInfo: req.body.nutritionalInfo ?
-        Object.keys(req.body.nutritionalInfo).reduce((acc, key) => {
-          const value = parseFloat(req.body.nutritionalInfo[key]);
-          if (!isNaN(value)) acc[key] = value;
-          return acc;
-        }, {}) : undefined,
-      isActive: req.body.isActive !== undefined ? Boolean(req.body.isActive) : true,
-      isFeatured: req.body.isFeatured !== undefined ? Boolean(req.body.isFeatured) : false,
-      isOrganic: req.body.isOrganic !== undefined ? Boolean(req.body.isOrganic) : false,
-      isBestseller: req.body.isBestseller !== undefined ? Boolean(req.body.isBestseller) : false
+      createdBy: req.user.id
     };
 
     const product = new Product(productData);
@@ -275,30 +281,10 @@ const createProduct = async (req, res) => {
 
     // Send newsletter notification for new product (only if product is active and featured)
     if (product.isActive && product.isFeatured) {
-      try {
-        console.log(' Sending new product notification...');
-        
-        // Get all newsletter subscribers
-        const users = await User.find({ newsletterSubscribed: true }).select('email');
-        const guests = await Guest.find({ newsletterSubscribed: true }).select('email');
-        
-        const subscriberEmails = [
-          ...users.map(user => user.email),
-          ...guests.map(guest => guest.email)
-        ];
-        
-        console.log(` Newsletter would be sent to ${subscriberEmails.length} subscribers:`);
-        subscriberEmails.forEach(email => console.log(`   - ${email}`));
-        console.log(` Product: ${product.name} (₹${product.price})`);
-        
-      } catch (emailError) {
-        console.error(' Newsletter notification error:', emailError);
-        // Don't fail the product creation if email fails
-      }
+      await sendProductNotificationEmail(product, 'new');
     } else {
-      console.log(` Newsletter not triggered (isActive: ${product.isActive}, isFeatured: ${product.isFeatured})`);
+      console.log(`Newsletter not triggered (isActive: ${product.isActive}, isFeatured: ${product.isFeatured})`);
     }
-
 
     res.status(201).json({
       success: true,
@@ -312,25 +298,13 @@ const createProduct = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: 'Product with this SKU already exists'
-      });
-    }
-
-    if (error.name === 'ValidationError') {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation error',
-        errors: Object.values(error.errors).map(err => ({
-          field: err.path,
-          message: err.message
-        }))
+        message: 'Product SKU already exists'
       });
     }
 
     res.status(500).json({
       success: false,
-      message: 'Failed to create product',
-      error: error.message
+      message: 'Failed to create product'
     });
   }
 };
@@ -354,83 +328,71 @@ const updateProduct = async (req, res) => {
       });
     }
 
-    // Process the update data similar to create
-    const updateData = {
-      ...req.body,
-      price: parseFloat(req.body.price),
-      originalPrice: req.body.originalPrice ? parseFloat(req.body.originalPrice) : null,
-      stock: parseInt(req.body.stock),
-      weight: req.body.weight && req.body.weight.value ? {
-        value: parseFloat(req.body.weight.value),
-        unit: req.body.weight.unit || 'g'
-      } : undefined,
-      nutritionalInfo: req.body.nutritionalInfo ? 
-        Object.keys(req.body.nutritionalInfo).reduce((acc, key) => {
-          const value = parseFloat(req.body.nutritionalInfo[key]);
-          if (!isNaN(value)) acc[key] = value;
-          return acc;
-        }, {}) : undefined,
-      isActive: req.body.isActive !== undefined ? Boolean(req.body.isActive) : undefined,
-      isFeatured: req.body.isFeatured !== undefined ? Boolean(req.body.isFeatured) : undefined,
-      isOrganic: req.body.isOrganic !== undefined ? Boolean(req.body.isOrganic) : undefined,
-      isBestseller: req.body.isBestseller !== undefined ? Boolean(req.body.isBestseller) : undefined
-    };
-
-    // Remove undefined values
-    Object.keys(updateData).forEach(key => {
-      if (updateData[key] === undefined) {
-        delete updateData[key];
-      }
-    });
-
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    );
-    
-    if (!product) {
+    // Get the original product for comparison
+    const originalProduct = await Product.findById(id);
+    if (!originalProduct) {
       return res.status(404).json({
         success: false,
         message: 'Product not found'
       });
     }
 
+    // Update product
+    const updatedProduct = await Product.findByIdAndUpdate(
+      id,
+      { ...req.body, updatedBy: req.user.id, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+
+    console.log('Product updated successfully:', updatedProduct._id);
+
+    // Check if product became featured or if it was already featured and still active
+    const shouldSendNotification = updatedProduct.isActive && updatedProduct.isFeatured && (
+      // Product just became featured
+      (!originalProduct.isFeatured && updatedProduct.isFeatured) ||
+      // Product was already featured and significant changes were made (price, description, etc.)
+      (originalProduct.isFeatured && (
+        originalProduct.price !== updatedProduct.price ||
+        originalProduct.description !== updatedProduct.description ||
+        originalProduct.name !== updatedProduct.name
+      ))
+    );
+
+    if (shouldSendNotification) {
+      await sendProductNotificationEmail(updatedProduct, 'update');
+    } else {
+      console.log('Newsletter not triggered - no significant changes or product not featured');
+    }
+
     res.json({
       success: true,
       message: 'Product updated successfully',
-      data: {
-        product
-      }
+      data: { product: updatedProduct }
     });
+
   } catch (error) {
     console.error('Update product error:', error);
     
-    if (error.name === 'ValidationError') {
+    if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message: 'Validation error',
-        errors: Object.values(error.errors).map(err => ({
-          field: err.path,
-          message: err.message
-        }))
+        message: 'Product SKU already exists'
       });
     }
-    
+
     res.status(500).json({
       success: false,
-      message: 'Failed to update product',
-      error: error.message
+      message: 'Failed to update product'
     });
   }
 };
 
-
 // Delete product (Admin only)
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const { id } = req.params;
 
+    const product = await Product.findByIdAndDelete(id);
     if (!product) {
       return res.status(404).json({
         success: false,
@@ -442,149 +404,97 @@ const deleteProduct = async (req, res) => {
       success: true,
       message: 'Product deleted successfully'
     });
+
   } catch (error) {
     console.error('Delete product error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to delete product',
-      error: error.message
+      message: 'Failed to delete product'
     });
   }
 };
 
-// Toggle product status (Admin only)
-const toggleProductStatus = async (req, res) => {
+// Get products by category
+const getProductsByCategory = async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const { category } = req.params;
+    const { limit = 20, sort = 'createdAt', order = 'desc' } = req.query;
 
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
+    const sortObj = {};
+    sortObj[sort] = order === 'desc' ? -1 : 1;
 
-    product.isActive = !product.isActive;
-    await product.save();
+    const products = await Product.find({
+      category: category,
+      isActive: true
+    })
+    .sort(sortObj)
+    .limit(parseInt(limit))
+    .populate('reviews', 'rating');
 
     res.json({
       success: true,
-      message: `Product ${product.isActive ? 'activated' : 'deactivated'} successfully`,
-      data: {
-        product
-      }
+      data: { products }
     });
+
   } catch (error) {
-    console.error('Toggle product status error:', error);
+    console.error('Get products by category error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to toggle product status',
-      error: error.message
+      message: 'Failed to fetch products by category'
     });
   }
 };
 
-// Add product review
-const addReview = async (req, res) => {
+// Search products
+const searchProducts = async (req, res) => {
   try {
-    const { rating, comment } = req.body;
-    const productId = req.params.id;
-    const userId = req.user._id;
+    const { q: searchTerm, limit = 20 } = req.query;
 
-    const product = await Product.findById(productId);
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
-
-    // Check if user already reviewed this product
-    const existingReview = product.ratings.reviews.find(
-      review => review.user.toString() === userId.toString()
-    );
-
-    if (existingReview) {
+    if (!searchTerm) {
       return res.status(400).json({
         success: false,
-        message: 'You have already reviewed this product'
+        message: 'Search term is required'
       });
     }
 
-    // Add new review
-    product.ratings.reviews.push({
-      user: userId,
-      rating,
-      comment
-    });
-
-    // Update ratings
-    const totalRating = product.ratings.reviews.reduce((sum, review) => sum + review.rating, 0);
-    product.ratings.average = totalRating / product.ratings.reviews.length;
-    product.ratings.count = product.ratings.reviews.length;
-
-    await product.save();
-
-    res.status(201).json({
-      success: true,
-      message: 'Review added successfully',
-      data: {
-        review: product.ratings.reviews[product.ratings.reviews.length - 1]
-      }
-    });
-  } catch (error) {
-    console.error('Add review error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to add review',
-      error: error.message
-    });
-  }
-};
-
-// Get product reviews
-const getProductReviews = async (req, res) => {
-  try {
-    const product = await Product.findById(req.params.id)
-      .populate('ratings.reviews.user', 'name')
-      .select('ratings');
-
-    if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: 'Product not found'
-      });
-    }
+    const products = await Product.find({
+      $and: [
+        { isActive: true },
+        {
+          $or: [
+            { name: { $regex: searchTerm, $options: 'i' } },
+            { description: { $regex: searchTerm, $options: 'i' } },
+            { tags: { $in: [new RegExp(searchTerm, 'i')] } },
+            { category: { $regex: searchTerm, $options: 'i' } }
+          ]
+        }
+      ]
+    })
+    .limit(parseInt(limit))
+    .populate('reviews', 'rating');
 
     res.json({
       success: true,
-      data: {
-        reviews: product.ratings.reviews,
-        ratings: product.ratings
-      }
+      data: { products }
     });
+
   } catch (error) {
-    console.error('Get reviews error:', error);
+    console.error('Search products error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch reviews',
-      error: error.message
+      message: 'Failed to search products'
     });
   }
 };
 
 module.exports = {
   getAllProducts,
-  getFeaturedProducts,
-  getCategories,
-  searchProducts,
-  getBestsellers,
   getProductById,
+  getFeaturedProducts,
+  getBestsellerProducts,
   createProduct,
   updateProduct,
   deleteProduct,
-  toggleProductStatus,
-  addReview,
-  getProductReviews
+  getProductsByCategory,
+  searchProducts
 };
