@@ -72,7 +72,7 @@ const productValidation = [
     .optional()
     .isBoolean()
     .withMessage('isOrganic must be boolean'),
-  body('isBestseller')
+  body('isBestseller') // <-- ADD THIS VALIDATION
     .optional()
     .isBoolean()
     .withMessage('isBestseller must be boolean'),
@@ -81,6 +81,18 @@ const productValidation = [
     .trim()
     .isLength({ max: 100 })
     .withMessage('Origin cannot exceed 100 characters')
+];
+
+
+const reviewValidation = [
+  body('rating')
+    .isInt({ min: 1, max: 5 })
+    .withMessage('Rating must be between 1 and 5'),
+  body('comment')
+    .optional()
+    .trim()
+    .isLength({ max: 500 })
+    .withMessage('Comment cannot exceed 500 characters')
 ];
 
 const searchValidation = [
@@ -93,14 +105,19 @@ const searchValidation = [
 // Public routes
 router.get('/', optionalAuth, productController.getAllProducts);
 router.get('/featured', productController.getFeaturedProducts);
-router.get('/bestsellers', productController.getBestsellerProducts); // FIXED: was getBestsellers
+router.get('/categories', productController.getCategories);
+router.get('/bestsellers', productController.getBestsellers);
 router.get('/search', searchValidation, productController.searchProducts);
-router.get('/category/:category', productController.getProductsByCategory); // ADDED: this route exists in controller
 router.get('/:id', optionalAuth, productController.getProductById);
 
 // Protected routes (Admin only)
 router.post('/', authenticate, requireAdmin, productValidation, productController.createProduct);
 router.put('/:id', authenticate, requireAdmin, productValidation, productController.updateProduct);
 router.delete('/:id', authenticate, requireAdmin, productController.deleteProduct);
+router.patch('/:id/status', authenticate, requireAdmin, productController.toggleProductStatus);
+
+// Review routes (Authenticated users)
+router.post('/:id/reviews', authenticate, reviewValidation, productController.addReview);
+router.get('/:id/reviews', productController.getProductReviews);
 
 module.exports = router;

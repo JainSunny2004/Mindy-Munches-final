@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^\w+([.-]?\w+)@\w+([.-]?\w+)(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   password: {
     type: String,
@@ -46,34 +46,21 @@ const userSchema = new mongoose.Schema({
   lastLogin: {
     type: Date
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
-  // Newsletter fields - ADDED HERE
   newsletterSubscribed: {
     type: Boolean,
     default: false
   },
-  unsubscribeToken: {
-    type: String,
-    unique: true,
-    sparse: true
-  }
-}, {
-  timestamps: true // adds createdAt and updatedAt
+  passwordResetToken: String,
+  passwordResetExpires: Date
+},
+{
+  timestamps: true // adds createdAt and updatedAt timestamps automatically
 });
 
-// Generate unsubscribe token before saving
-userSchema.pre('save', function(next) {
-  if (this.isNew && !this.unsubscribeToken && this.newsletterSubscribed) {
-    this.unsubscribeToken = crypto.randomBytes(32).toString('hex');
-  }
-  next();
-});
-
-// Hash password before saving
+// Hash password before saving to database
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-  
+
   try {
     const salt = await bcrypt.genSalt(12);
     this.password = await bcrypt.hash(this.password, salt);
@@ -83,29 +70,30 @@ userSchema.pre('save', async function(next) {
   }
 });
 
-// Compare password method
+// Method to compare input password with hashed password
 userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Generate password reset token
-userSchema.methods.getResetPasswordToken = function() {
-  const resetToken = crypto.randomBytes(20).toString('hex');
-  
-  this.resetPasswordToken = crypto
-    .createHash('sha256')
-    .update(resetToken)
-    .digest('hex');
-    
-  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 minutes
-  
-  return resetToken;
+// Remove password field when returning user object as JSON
+userSchema.methods.toJSON = function() {
+  const userObject = this.toObject();
+  delete userObject.password;
+  return userObject;
 };
 
-// Update last login
-userSchema.methods.updateLastLogin = function() {
-  this.lastLogin = new Date();
-  return this.save();
+userSchema.methods.getResetPasswordToken = function() {
+  // Generate a random token
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash the token and save it to the database
+  this.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+  // Set the token's expiration time to 15 minutes
+  this.passwordResetExpires = Date.now() + 15 * 60 * 1000;
+
+  // Return the unhashed token for the email link
+  return resetToken;
 };
 
 module.exports = mongoose.model('User', userSchema);
