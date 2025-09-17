@@ -338,6 +338,13 @@ const createProduct = async (req, res) => {
 // Update product (Admin only)
 const updateProduct = async (req, res) => {
   try {
+    console.log('Update product request received for ID:', req.params.id);
+    console.log('Update data:', req.body);
+    console.log('User role:', req.user?.role);
+
+    const { id } = req.params;
+
+    // Check validation errors
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
