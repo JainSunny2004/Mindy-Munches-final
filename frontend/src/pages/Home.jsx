@@ -230,25 +230,34 @@ const Home = () => {
           );
         };
 
-        if (!import.meta.env.VITE_API_URL || !isVercel()) {
+        if (!import.meta.env.VITE_API_URL) {
           throw new Error("API URL is not defined");
         }
 
         // Try fetching from the API
-        const [apiProductsResponse, apiTestimonialsResponse] =
-          await Promise.all([
-            fetch(`${import.meta.env.VITE_API_URL}/products`),
-            fetch(`${import.meta.env.VITE_API_URL}/testimonials`),
-          ]);
+        const [
+          apiProductsResponse,
+          apiTestimonialsResponse,
+          apiBestsellersResponse,
+        ] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/products`),
+          fetch(`${import.meta.env.VITE_API_URL}/testimonials`),
+          fetch(`${import.meta.env.VITE_API_URL}/products/bestsellers`),
+        ]);
 
-        if (!apiProductsResponse.ok || !apiTestimonialsResponse.ok) {
+        if (
+          !apiProductsResponse.ok ||
+          !apiTestimonialsResponse.ok ||
+          !apiBestsellersResponse.ok
+        ) {
           throw new Error("API responses not ok");
         }
 
         const productsData = await apiProductsResponse.json();
         const testimonialsData = await apiTestimonialsResponse.json();
+        const bestsellersData = await apiBestsellersResponse.json();
 
-        // Process products data
+        // Process products data for "Traditional Superfoods" section
         let allProducts = [];
         if (
           productsData &&
@@ -281,38 +290,30 @@ const Home = () => {
           allTestimonials = testimonialsData;
         }
 
-        setProducts(allProducts.slice(0, 6));
-        setBestsellers(allProducts.slice(0, 3));
+        // Process bestsellers data for "Our Bestsellers" section
+        let allBestsellers = [];
+        if (
+          bestsellersData &&
+          bestsellersData.success &&
+          bestsellersData.data &&
+          Array.isArray(bestsellersData.data.products)
+        ) {
+          allBestsellers = bestsellersData.data.products;
+        } else if (bestsellersData && Array.isArray(bestsellersData.products)) {
+          allBestsellers = bestsellersData.products;
+        } else if (Array.isArray(bestsellersData)) {
+          allBestsellers = bestsellersData;
+        }
+
+        setProducts(allProducts.slice(0, 6)); // Use allProducts for this section
+        setBestsellers(allBestsellers); // Use allBestsellers for this section
         setTestimonials(allTestimonials);
       } catch (error) {
-        console.error("Error loading data:", error);
-
-        // Optional: fallback to public data files
-        try {
-          const [publicProductsResponse, publicTestimonialsResponse] =
-            await Promise.all([
-              fetch("/data/products.json"),
-              fetch("/data/testimonials.json"),
-            ]);
-
-          if (publicProductsResponse.ok && publicTestimonialsResponse.ok) {
-            const productsData = await publicProductsResponse.json();
-            const testimonialsData = await publicTestimonialsResponse.json();
-
-            setProducts(productsData.products.slice(0, 6));
-            setBestsellers(productsData.products.slice(0, 3));
-            setTestimonials(testimonialsData.testimonials);
-          } else {
-            throw new Error("Public data files not found");
-          }
-        } catch (publicError) {
-          console.warn("Public data fallback failed:", publicError.message);
-
-          // Final fallback — empty arrays
-          setProducts([]);
-          setBestsellers([]);
-          setTestimonials([]);
-        }
+        console.error("Error loading data from API:", error);
+        // Set state to empty arrays in case of API failure
+        setProducts([]);
+        setBestsellers([]);
+        setTestimonials([]);
       } finally {
         setLoading(false);
       }
@@ -320,6 +321,7 @@ const Home = () => {
 
     loadData();
   }, []);
+
 
   return (
     <div className="min-h-screen overflow-x-hidden max-w-full">

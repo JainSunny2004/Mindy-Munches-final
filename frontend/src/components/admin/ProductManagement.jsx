@@ -257,6 +257,8 @@ const ProductManagement = () => {
       isActive: product.isActive !== undefined ? product.isActive : true,
       isFeatured: product.isFeatured || product.featured || false,
       isOrganic: product.isOrganic || false,
+      origin: product.origin || 'India',
+      isBestseller: product.isBestseller || false, // <-- Add this line
       origin: product.origin || 'India'
     })
     setShowAddModal(true)
@@ -411,6 +413,12 @@ const ProductManagement = () => {
                                 🌿 Organic
                               </span>
                             )}
+                            {product.isBestseller && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                🔥 Best Seller
+                              </span>
+                            )}
+
                           </div>
                           <div className="text-sm text-gray-500">{product.shortDescription || product.description?.substring(0, 50) + '...'}</div>
                         </div>
