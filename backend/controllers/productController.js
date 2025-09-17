@@ -1,7 +1,9 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
 
-const { sendNewProductNotification } = require('./newsletterController');
+const Guest = require('../models/Guest');
+const User = require('../models/User');
+
 
 // Get all products with filtering, sorting, and pagination
 const getAllProducts = async (req, res) => {
@@ -274,14 +276,29 @@ const createProduct = async (req, res) => {
     // Send newsletter notification for new product (only if product is active and featured)
     if (product.isActive && product.isFeatured) {
       try {
-        console.log('Sending new product notification...');
-        const notificationResult = await sendNewProductNotification(product);
-        console.log('Newsletter notification result:', notificationResult);
+        console.log(' Sending new product notification...');
+        
+        // Get all newsletter subscribers
+        const users = await User.find({ newsletterSubscribed: true }).select('email');
+        const guests = await Guest.find({ newsletterSubscribed: true }).select('email');
+        
+        const subscriberEmails = [
+          ...users.map(user => user.email),
+          ...guests.map(guest => guest.email)
+        ];
+        
+        console.log(` Newsletter would be sent to ${subscriberEmails.length} subscribers:`);
+        subscriberEmails.forEach(email => console.log(`   - ${email}`));
+        console.log(` Product: ${product.name} (₹${product.price})`);
+        
       } catch (emailError) {
-        console.error('Failed to send newsletter notification:', emailError);
+        console.error(' Newsletter notification error:', emailError);
         // Don't fail the product creation if email fails
       }
+    } else {
+      console.log(` Newsletter not triggered (isActive: ${product.isActive}, isFeatured: ${product.isFeatured})`);
     }
+
 
     res.status(201).json({
       success: true,
