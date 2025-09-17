@@ -12,6 +12,7 @@ const cartRoutes = require('./routes/cart');
 const orderRoutes = require('./routes/orders');
 const testimonialRoutes = require('./routes/testimonials'); // ← Enable this
 const adminRoutes = require('./routes/admin');
+const newsLetterRoutes = require('./routes/newsLetter');
 
 // In backend/server.js
 const videoTestimonialRoutes = require('./routes/videoTestimonials');
@@ -39,6 +40,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
+app.use('/api/newsletter', require('./routes/newsLetter'));
 
 
 // Security middleware

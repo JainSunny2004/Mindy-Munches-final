@@ -1,6 +1,8 @@
 const { validationResult } = require('express-validator');
 const Product = require('../models/Product');
 
+const { sendNewProductNotification } = require('./newsletterController');
+
 // Get all products with filtering, sorting, and pagination
 const getAllProducts = async (req, res) => {
   try {
@@ -217,7 +219,7 @@ const createProduct = async (req, res) => {
   try {
     console.log('Create product request received:', req.body);
     console.log('User role:', req.user?.role);
-    
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
@@ -239,13 +241,12 @@ const createProduct = async (req, res) => {
     // Ensure at least one image is marked as primary
     const hasPrimary = req.body.images.some(img => img.isPrimary);
     if (!hasPrimary && req.body.images.length > 0) {
-      req.body.images[0].isPrimary = true;
+      req.body.images.isPrimary = true;
     }
 
     // Create product with processed data
     const productData = {
       ...req.body,
-      // Ensure proper data types
       price: parseFloat(req.body.price),
       originalPrice: req.body.originalPrice ? parseFloat(req.body.originalPrice) : null,
       stock: parseInt(req.body.stock),
@@ -253,14 +254,12 @@ const createProduct = async (req, res) => {
         value: parseFloat(req.body.weight.value),
         unit: req.body.weight.unit || 'g'
       } : undefined,
-      // Handle nutritional info
-      nutritionalInfo: req.body.nutritionalInfo ? 
+      nutritionalInfo: req.body.nutritionalInfo ?
         Object.keys(req.body.nutritionalInfo).reduce((acc, key) => {
           const value = parseFloat(req.body.nutritionalInfo[key]);
           if (!isNaN(value)) acc[key] = value;
           return acc;
         }, {}) : undefined,
-      // Ensure boolean fields
       isActive: req.body.isActive !== undefined ? Boolean(req.body.isActive) : true,
       isFeatured: req.body.isFeatured !== undefined ? Boolean(req.body.isFeatured) : false,
       isOrganic: req.body.isOrganic !== undefined ? Boolean(req.body.isOrganic) : false,
@@ -269,16 +268,27 @@ const createProduct = async (req, res) => {
 
     const product = new Product(productData);
     await product.save();
-    
+
     console.log('Product created successfully:', product._id);
-    
+
+    // Send newsletter notification for new product (only if product is active and featured)
+    if (product.isActive && product.isFeatured) {
+      try {
+        console.log('Sending new product notification...');
+        const notificationResult = await sendNewProductNotification(product);
+        console.log('Newsletter notification result:', notificationResult);
+      } catch (emailError) {
+        console.error('Failed to send newsletter notification:', emailError);
+        // Don't fail the product creation if email fails
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Product created successfully',
-      data: {
-        product
-      }
+      data: { product }
     });
+
   } catch (error) {
     console.error('Create product error:', error);
     
@@ -307,7 +317,6 @@ const createProduct = async (req, res) => {
     });
   }
 };
-
 
 // Update product (Admin only)
 const updateProduct = async (req, res) => {

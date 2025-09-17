@@ -7,7 +7,7 @@ const guestSchema = new mongoose.Schema({
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
   },
   name: {
     type: String,
@@ -17,9 +17,27 @@ const guestSchema = new mongoose.Schema({
   newsletterSubscribed: {
     type: Boolean,
     default: true
+  },
+  subscriptionSource: {
+    type: String,
+    enum: ['footer', 'popup', 'checkout', 'manual'],
+    default: 'footer'
+  },
+  unsubscribeToken: {
+    type: String,
+    unique: true,
+    sparse: true
   }
 }, {
   timestamps: true // Adds createdAt and updatedAt timestamps
+});
+
+// Generate unsubscribe token before saving
+guestSchema.pre('save', function(next) {
+  if (this.isNew && !this.unsubscribeToken) {
+    this.unsubscribeToken = require('crypto').randomBytes(32).toString('hex');
+  }
+  next();
 });
 
 module.exports = mongoose.model('Guest', guestSchema);
