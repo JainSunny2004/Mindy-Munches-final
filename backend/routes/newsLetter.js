@@ -1,19 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const {
-  subscribeToNewsletter,
-  sendNewsletter,
-  unsubscribeFromNewsletter,
-  getNewsletterStats
-} = require('../controllers/newsletterController');
-const { authenticateToken, isAdmin } = require('../middleware/auth');
 
-// Public routes
+// Import only the function that works
+const { subscribeToNewsletter } = require('../controllers/newsletterController');
+
+// Only add the working route first
 router.post('/subscribe', subscribeToNewsletter);
-router.get('/unsubscribe', unsubscribeFromNewsletter);
 
-// Admin routes
-router.post('/send', authenticateToken, isAdmin, sendNewsletter);
-router.get('/stats', authenticateToken, isAdmin, getNewsletterStats);
+// Simple test route to verify it's working
+router.get('/test', (req, res) => {
+  res.json({ success: true, message: 'Newsletter route is working!' });
+});
 
 module.exports = router;

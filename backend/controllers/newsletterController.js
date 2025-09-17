@@ -70,7 +70,7 @@ exports.subscribeToNewsletter = async (req, res) => {
   }
 };
 
-// Other functions remain the same...
+// Send newsletter to all subscribers
 exports.sendNewsletter = async (req, res) => {
   try {
     const { subject, htmlContent } = req.body;
@@ -112,6 +112,7 @@ exports.sendNewsletter = async (req, res) => {
   }
 };
 
+// Unsubscribe from newsletter
 exports.unsubscribeFromNewsletter = async (req, res) => {
   try {
     const { token } = req.query;
@@ -153,6 +154,7 @@ exports.unsubscribeFromNewsletter = async (req, res) => {
   }
 };
 
+// Get newsletter statistics
 exports.getNewsletterStats = async (req, res) => {
   try {
     const userSubscribers = await User.countDocuments({ newsletterSubscribed: true });
