@@ -314,6 +314,55 @@ app.get("/api/health", (req, res) => {
   });
 });
 
+// Test new product notification
+app.post('/api/test/new-product-notification', async (req, res) => {
+  try {
+    const { testNewProductNotification } = require('./services/notificationService');
+    
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Email is required' 
+      });
+    }
+
+    // Mock product data for testing
+    const mockProduct = {
+      _id: '60f1b2b3c4d5e6f7a8b9c0d1',
+      name: 'Premium Roasted Makhana Mix',
+      description: 'Crunchy and nutritious fox nuts roasted to perfection with traditional Indian spices. A healthy snack that\'s both delicious and guilt-free!',
+      price: 299,
+      originalPrice: 399,
+      category: 'snacks',
+      stock: 25,
+      images: [
+        { url: 'https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Makhana' }
+      ]
+    };
+
+    console.log(`🧪 Testing new product notification to ${email}`);
+    const result = await testNewProductNotification(mockProduct, email);
+    
+    res.json({
+      success: true,
+      message: `New product notification sent successfully to ${email}`,
+      product: mockProduct.name,
+      service: process.env.BREVO_API_KEY ? 'Brevo API' : 'No Brevo API Key configured',
+      result,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('❌ Test new product notification error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send new product notification',
+      error: error.message
+    });
+  }
+});
+
 // 404 handler
 app.use("*", (req, res) => {
   res.status(404).json({
