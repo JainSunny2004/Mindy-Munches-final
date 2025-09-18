@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom'; // Changed import
 
 const ResetPasswordPage = () => {
-  const { token } = useParams();
+  const [searchParams] = useSearchParams(); // Use searchParams instead of useParams
+  const token = searchParams.get('token'); // Get token from query string
   const navigate = useNavigate();
+  
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,20 +16,26 @@ const ResetPasswordPage = () => {
     e.preventDefault();
     setError('');
     setMessage('');
-    
+
     if (newPassword !== confirmPassword) {
       return setError('Passwords do not match');
+    }
+
+    if (!token) {
+      return setError('Invalid reset link');
     }
 
     setIsLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/reset-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({ token, newPassword }),
       });
+
       const data = await response.json();
-      
       if (!response.ok) {
         throw new Error(data.message || 'Failed to reset password');
       }
@@ -42,6 +50,19 @@ const ResetPasswordPage = () => {
       setIsLoading(false);
     }
   };
+
+  // Add token validation
+  if (!token) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Invalid Reset Link</h2>
+          <p className="text-gray-600">The password reset link is invalid or has expired.</p>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">

@@ -1,15 +1,15 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { validationResult } = require('express-validator');
-const User = require('../models/User');
-const emailService = require('../services/emailService');
-const crypto = require('crypto'); // Add this import
-const Guest = require('../models/Guest');
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcryptjs");
+const { validationResult } = require("express-validator");
+const User = require("../models/User");
+const emailService = require("../services/emailService");
+const crypto = require("crypto"); // Add this import
+const Guest = require("../models/Guest");
 
 // Generate JWT token
 const generateToken = (userId) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: '7d'
+    expiresIn: "7d",
   });
 };
 
@@ -20,8 +20,8 @@ const register = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation failed',
-        errors: errors.array()
+        message: "Validation failed",
+        errors: errors.array(),
       });
     }
 
@@ -32,7 +32,7 @@ const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'User already exists with this email'
+        message: "User already exists with this email",
       });
     }
 
@@ -40,7 +40,7 @@ const register = async (req, res) => {
     const user = new User({
       name,
       email,
-      password
+      password,
     });
 
     await user.save();
@@ -49,13 +49,13 @@ const register = async (req, res) => {
     try {
       // Check if email already exists in Guest collection
       const existingGuest = await Guest.findOne({ email: user.email });
-      
+
       if (!existingGuest) {
         // Create new guest subscriber
         const guest = new Guest({
           email: user.email,
           name: user.name,
-          newsletterSubscribed: true
+          newsletterSubscribed: true,
         });
         await guest.save();
       }
@@ -63,9 +63,8 @@ const register = async (req, res) => {
       // Send welcome email
       await emailService.sendWelcomeEmail(user.email, user.name);
       console.log(`✅ Auto-subscribed and welcomed: ${user.email}`);
-      
     } catch (emailError) {
-      console.error('Newsletter auto-subscription error:', emailError);
+      console.error("Newsletter auto-subscription error:", emailError);
       // Don't fail registration if newsletter fails
     }
 
@@ -74,18 +73,18 @@ const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       data: {
         user,
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
-    console.error('Register error:', error);
+    console.error("Register error:", error);
     res.status(500).json({
       success: false,
-      message: 'Registration failed',
-      error: error.message
+      message: "Registration failed",
+      error: error.message,
     });
   }
 };
@@ -97,19 +96,19 @@ const login = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(400).json({
         success: false,
-        message: 'Validation failed',
-        errors: errors.array()
+        message: "Validation failed",
+        errors: errors.array(),
       });
     }
 
     const { email, password } = req.body;
 
     // Find user and include password for comparison
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
     }
 
@@ -118,7 +117,7 @@ const login = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid email or password'
+        message: "Invalid email or password",
       });
     }
 
@@ -146,16 +145,14 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     res.status(500).json({
       success: false,
-      message: 'Login failed',
-      error: error.message
+      message: "Login failed",
+      error: error.message,
     });
   }
 };
-
-
 
 // Demo login
 const demoLogin = async (req, res) => {
@@ -163,10 +160,10 @@ const demoLogin = async (req, res) => {
     const { type } = req.body; // 'user' or 'admin'
 
     let email;
-    if (type === 'admin') {
-      email = 'admin@demo.com';
+    if (type === "admin") {
+      email = "admin@demo.com";
     } else {
-      email = 'user@demo.com';
+      email = "user@demo.com";
     }
 
     let user = await User.findOne({ email });
@@ -174,10 +171,10 @@ const demoLogin = async (req, res) => {
     // Create demo users if they do not exist
     if (!user) {
       user = new User({
-        name: type === 'admin' ? 'Admin Demo' : 'User Demo',
+        name: type === "admin" ? "Admin Demo" : "User Demo",
         email: email,
-        password: 'demo123',
-        role: type === 'admin' ? 'admin' : 'user'
+        password: "demo123",
+        role: type === "admin" ? "admin" : "user",
       });
 
       await user.save();
@@ -192,18 +189,18 @@ const demoLogin = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Demo login successful',
+      message: "Demo login successful",
       data: {
         user,
-        token
-      }
+        token,
+      },
     });
   } catch (error) {
-    console.error('Demo login error:', error);
+    console.error("Demo login error:", error);
     res.status(500).json({
       success: false,
-      message: 'Demo login failed',
-      error: error.message
+      message: "Demo login failed",
+      error: error.message,
     });
   }
 };
@@ -213,14 +210,14 @@ const logout = async (req, res) => {
   try {
     res.json({
       success: true,
-      message: 'Logout successful'
+      message: "Logout successful",
     });
   } catch (error) {
-    console.error('Logout error:', error);
+    console.error("Logout error:", error);
     res.status(500).json({
       success: false,
-      message: 'Logout failed',
-      error: error.message
+      message: "Logout failed",
+      error: error.message,
     });
   }
 };
@@ -231,15 +228,15 @@ const getProfile = async (req, res) => {
     res.json({
       success: true,
       data: {
-        user: req.user
-      }
+        user: req.user,
+      },
     });
   } catch (error) {
-    console.error('Get profile error:', error);
+    console.error("Get profile error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to get profile',
-      error: error.message
+      message: "Failed to get profile",
+      error: error.message,
     });
   }
 };
@@ -257,17 +254,17 @@ const updateProfile = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Profile updated successfully',
+      message: "Profile updated successfully",
       data: {
-        user
-      }
+        user,
+      },
     });
   } catch (error) {
-    console.error('Update profile error:', error);
+    console.error("Update profile error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update profile',
-      error: error.message
+      message: "Failed to update profile",
+      error: error.message,
     });
   }
 };
@@ -277,7 +274,7 @@ const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
-    const user = await User.findById(req.user._id).select('+password');
+    const user = await User.findById(req.user._id).select("+password");
 
     // Verify current password
     const isCurrentPasswordValid = await user.comparePassword(currentPassword);
@@ -285,7 +282,7 @@ const changePassword = async (req, res) => {
     if (!isCurrentPasswordValid) {
       return res.status(400).json({
         success: false,
-        message: 'Current password is incorrect'
+        message: "Current password is incorrect",
       });
     }
 
@@ -295,14 +292,14 @@ const changePassword = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Password changed successfully'
+      message: "Password changed successfully",
     });
   } catch (error) {
-    console.error('Change password error:', error);
+    console.error("Change password error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to change password',
-      error: error.message
+      message: "Failed to change password",
+      error: error.message,
     });
   }
 };
@@ -319,27 +316,28 @@ const forgotPassword = async (req, res) => {
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found with this email address'
+        message: "User not found with this email address",
       }); // [web:22]
     }
 
     // 2️⃣ Create reset token & save without validation
-    const resetToken = user.getResetPasswordToken();        // hashed & expires handled in the model
+    const resetToken = user.getResetPasswordToken(); // hashed & expires handled in the model
     await user.save({ validateBeforeSave: false });
 
     // 3️⃣ Build URL → prefer env var, fall back to request origin
-    const baseURL = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
-    const resetURL = `${baseURL}/reset-password?token=${resetToken}`; // [web:25]
+    const baseURL =
+      process.env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
+    const resetURL = `${baseURL}/reset-password/${resetToken}`; // [web:25]
 
     // 4️⃣ Send e-mail (emailService has a dev-mode logger)
     await emailService.sendPasswordResetEmail(user.email, resetToken);
 
     return res.json({
       success: true,
-      message: 'Password reset instructions sent to your email'
+      message: "Password reset instructions sent to your email",
     });
   } catch (error) {
-    console.error('Forgot password error:', error);
+    console.error("Forgot password error:", error);
 
     // Roll back token fields if anything fails
     if (user) {
@@ -350,8 +348,8 @@ const forgotPassword = async (req, res) => {
 
     return res.status(500).json({
       success: false,
-      message: 'Failed to process forgot password request',
-      error: error.message
+      message: "Failed to process forgot password request",
+      error: error.message,
     });
   }
 };
@@ -362,17 +360,17 @@ const resetPassword = async (req, res) => {
     const { token, newPassword } = req.body;
 
     // Hash the token to compare with the one in the database
-    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const user = await User.findOne({
       passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() }
+      passwordResetExpires: { $gt: Date.now() },
     });
 
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or expired token'
+        message: "Invalid or expired token",
       });
     }
 
@@ -384,14 +382,14 @@ const resetPassword = async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Password reset successful'
+      message: "Password reset successful",
     });
   } catch (error) {
-    console.error('Reset password error:', error);
+    console.error("Reset password error:", error);
     res.status(500).json({
       success: false,
-      message: 'Failed to reset password',
-      error: error.message
+      message: "Failed to reset password",
+      error: error.message,
     });
   }
 };

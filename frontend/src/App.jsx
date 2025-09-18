@@ -24,6 +24,7 @@ import Story from "./pages/Story";
 import TermsAndConditions from "./pages/TermsAndConditions";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import RefundPolicy from "./pages/RefundPolicy";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -188,6 +189,24 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            
+             <Route
+              path="/reset-password/:token"
+              element={
+                <ProtectedRoute requiredRole="admin">
+                  <motion.div
+                    initial="initial"
+                    animate="in"
+                    exit="out"
+                    variants={pageVariants}
+                    transition={pageTransition}
+                  >
+                    <ResetPasswordPage />
+                  </motion.div>
+                </ProtectedRoute>
+              }
+            />
+
 
             {/*Static Pages*/}
             <Route
