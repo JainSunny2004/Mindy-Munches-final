@@ -317,28 +317,30 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({
         success: false,
         message: "User not found with this email address",
-      }); // [web:22]
+      });
     }
 
     // 2️⃣ Create reset token & save without validation
-    const resetToken = user.getResetPasswordToken(); // hashed & expires handled in the model
+    const resetToken = user.getResetPasswordToken();
     await user.save({ validateBeforeSave: false });
 
-    // 3️⃣ Build URL → prefer env var, fall back to request origin
-    const baseURL =
-      process.env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
-    const resetURL = `${baseURL}/reset-password/${resetToken}`; // [web:25]
+    // 3️⃣ Build complete reset URL with query parameter
+    const baseURL = process.env.FRONTEND_URL || `${req.protocol}://${req.get("host")}`;
+    const resetURL = `${baseURL}/reset-password?token=${resetToken}`;
 
-    // 4️⃣ Send e-mail (emailService has a dev-mode logger)
-    await emailService.sendPasswordResetEmail(user.email, resetToken);
+    // 4️⃣ Send email with complete URL (not just token)
+    await emailService.sendPasswordResetEmail(user.email, resetURL);
+    console.log(`✅ Password reset email sent to ${user.email}`);
+    console.log(`📧 Reset URL: ${resetURL}`); // Debug log
 
     return res.json({
       success: true,
       message: "Password reset instructions sent to your email",
     });
+
   } catch (error) {
     console.error("Forgot password error:", error);
-
+    
     // Roll back token fields if anything fails
     if (user) {
       user.passwordResetToken = undefined;
@@ -353,6 +355,7 @@ const forgotPassword = async (req, res) => {
     });
   }
 };
+
 
 // Reset password
 const resetPassword = async (req, res) => {

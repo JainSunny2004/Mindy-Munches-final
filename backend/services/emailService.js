@@ -189,8 +189,7 @@ exports.sendOrderConfirmation = async (email, orderData) => {
 };
 
 // Password Reset Email
-exports.sendPasswordResetEmail = async (email, resetToken) => {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+exports.sendPasswordResetEmail = async (email, resetUrl) => { // Changed parameter name
   const subject = 'Reset Your Mindy Munchs Password';
   const htmlContent = `
     <!DOCTYPE html>
@@ -221,6 +220,7 @@ exports.sendPasswordResetEmail = async (email, resetToken) => {
           <div class="warning">
             <p><strong>Security Note:</strong> If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
           </div>
+          <p><strong>Direct link:</strong> <a href="${resetUrl}">${resetUrl}</a></p>
         </div>
         <div class="footer">
           <p>© 2025 Mindy Munchs. All rights reserved.</p>
@@ -232,6 +232,7 @@ exports.sendPasswordResetEmail = async (email, resetToken) => {
   
   return await sendEmail(email, subject, htmlContent);
 };
+
 
 module.exports = {
   sendWelcomeEmail: exports.sendWelcomeEmail,
