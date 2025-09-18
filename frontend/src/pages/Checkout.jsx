@@ -77,11 +77,11 @@ const Checkout = () => {
 }, []); 
 
   const formatPrice = (price) => {
-    return `₹ ${(price / 100).toLocaleString("en-IN")}`;
+    return `₹ ${(price).toLocaleString("en-IN")}`;
   };
 
   const subtotal = getTotal();
-  const shipping = subtotal >= 50000 ? 0 : 5000; // Free shipping above ₹500
+  const shipping = subtotal >= 500 ? 0 : 50; // Free shipping above ₹500
   //const tax = Math.round(subtotal * 0.18); // 18% GST
   const total = subtotal + shipping;
 
