@@ -122,114 +122,117 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleRazorpayPayment = (orderId) => {
-    return new Promise((resolve, reject) => {
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID, // Use your test key here
-        amount: total,
-        currency: "INR",
-        name: "Mindy Munchs",
-        description: `Order for ${getItemCount()} items`,
-        image: "/Mindy Munchs_Logo-01.png",
-        order_id: orderId, // Use the orderId received from the backend
-        handler: function (response) {
-          console.log("Payment successful:", response);
-          resolve(response); // Resolve the promise with the payment response
-        },
-        prefill: {
-          name: orderData.name,
-          email: orderData.email,
-          contact: orderData.phone,
-        },
-        notes: {
-          address: `${orderData.address.street}, ${orderData.address.city}, ${orderData.address.state} - ${orderData.address.pincode}`,
-        },
-        theme: {
-          color: "#f97316",
-        },
-        modal: {
-          ondismiss: function () {
-            reject(new Error("Payment cancelled"));
-          },
-        },
-      };
+  // Add this function to your Checkout.jsx component
+const handleRazorpayPayment = (razorpayOrderId) => {
+  return new Promise((resolve, reject) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RIgXHSN9Xwq7U9',
+      amount: total * 100, // Convert to paise
+      currency: 'INR',
+      name: 'Mindy Munchs',
+      description: 'Order Payment',
+      order_id: razorpayOrderId,
+      handler: function (response) {
+        console.log('Razorpay payment successful:', response);
+        resolve(response);
+      },
+      prefill: {
+        name: orderData.name,
+        email: orderData.email,
+        contact: orderData.phone
+      },
+      theme: {
+        color: '#F37254'
+      },
+      modal: {
+        ondismiss: function() {
+          reject(new Error('Payment cancelled by user'));
+        }
+      }
+    };
 
-      const rzp = new window.Razorpay(options);
-      rzp.on("payment.failed", function (response) {
-        console.error("Payment failed:", response.error);
-        reject(new Error(response.error.description));
-      });
-      rzp.open();
-    });
-  };
+    if (window.Razorpay) {
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } else {
+      reject(new Error('Razorpay SDK not loaded'));
+    }
+  });
+};
 
   const handlePlaceOrder = async () => {
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) return;
+  
+  setIsProcessing(true);
+  
+  try {
+    // Step 1: Create Razorpay order
+    const orderResponse = await fetch('/api/payment/create-razorpay-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+      },
+      body: JSON.stringify({
+        amount: total,
+        currency: 'INR',
+        orderData: {
+          name: orderData.name,
+          email: orderData.email,
+          phone: orderData.phone
+        }
+      })
+    });
 
-    setIsProcessing(true);
+    if (!orderResponse.ok) throw new Error('Failed to create order');
+    
+    const { id: razorpayOrderId } = await orderResponse.json();
 
-    try {
-      // Step 1: Create an order on the backend via API call.
-      // This is a crucial step that generates a secure order ID.
-      const orderResponse = await fetch("/api/payment/create-razorpay-order", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: total, // The 'total' amount is already in paise, as required by Razorpay.
-          currency: "INR",
-        }),
-      });
+    // Step 2: Handle Razorpay payment
+    const paymentResponse = await handleRazorpayPayment(razorpayOrderId);
 
-      if (!orderResponse.ok) {
-        throw new Error("Failed to create Razorpay order");
-      }
+    // Step 3: Verify payment and create order
+    const verifyResponse = await fetch('/api/payment/verify-payment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
+      },
+      body: JSON.stringify({
+        razorpay_order_id: paymentResponse.razorpay_order_id,
+        razorpay_payment_id: paymentResponse.razorpay_payment_id,
+        razorpay_signature: paymentResponse.razorpay_signature,
+        orderDetails: {
+          name: orderData.name,
+          email: orderData.email,
+          phone: orderData.phone,
+          address: orderData.address,
+          items: items,
+          subtotal: subtotal,
+          shipping: shipping,
+          tax: tax,
+          totalAmount: total
+        }
+      })
+    });
 
-      const { id: razorpayOrderId } = await orderResponse.json();
-
-      // Step 2: Handle the Razorpay payment with the secure order ID from the backend.
-      const paymentResponse = await handleRazorpayPayment(razorpayOrderId);
-
-      // Step 3: Send the payment details to the backend for signature verification.
-      // This step confirms the payment's authenticity and prevents tampering.
-      const verifyResponse = await fetch("/api/payment/verify-payment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          razorpay_order_id: paymentResponse.razorpay_order_id,
-          razorpay_payment_id: paymentResponse.razorpay_payment_id,
-          razorpay_signature: paymentResponse.razorpay_signature,
-        }),
-      });
-
-      if (!verifyResponse.ok) {
-        throw new Error("Payment verification failed");
-      }
-
-      const verificationResult = await verifyResponse.json();
-      if (verificationResult.status !== "success") {
-        throw new Error("Payment verification failed on the server");
-      }
-
-      // After successful verification, you can proceed with order fulfillment.
-      console.log("Order placed and payment verified successfully! 🚀");
-
-      // Clear cart and show the success page
+    const result = await verifyResponse.json();
+    
+    if (result.success) {
       clearCart();
-      setOrderId(razorpayOrderId);
+      setOrderId(result.orderNumber);
       setShowSuccess(true);
-    } catch (error) {
-      console.error("Order placement failed:", error);
-      alert(`Order failed: ${error.message}`);
-    } finally {
-      setIsProcessing(false);
+    } else {
+      throw new Error(result.message);
     }
-  };
+
+  } catch (error) {
+    console.error('Order placement failed:', error);
+    alert(`Order failed: ${error.message}`);
+  } finally {
+    setIsProcessing(false);
+  }
+};
 
   if (showSuccess) {
     return (
