@@ -91,7 +91,7 @@ router.put('/profile', authenticate, profileUpdateValidation, authController.upd
 router.post('/change-password', authenticate, changePasswordValidation, authController.changePassword);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
-router.post('/newsletter-subscribe', authController.subscribeNewsletter);
+//router.post('/newsletter-subscribe', authController.subscribeNewsletter);
 
 // Demo account routes
 router.post('/demo-login', authController.demoLogin);

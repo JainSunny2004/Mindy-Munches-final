@@ -5,7 +5,7 @@ const User = require('../models/User');
 const Guest = require('../models/Guest');
 const emailService = require('../services/emailService');
 
-const { notifyNewProduct } = require('../services/notificationService');
+//const { notifyNewProduct } = require('../services/notificationService');
 
 // Get all products with filtering, sorting, and pagination
 const getAllProducts = async (req, res) => {
@@ -278,21 +278,46 @@ const createProduct = async (req, res) => {
     
     console.log('Product created successfully:', product._id);
 
-    // Send newsletter notifications using the notification service
+    // Replace the existing notification block with this:
     if (product.isActive) {
-      console.log('📢 Triggering new product notifications...');
+      console.log('📢 Sending new product notifications...');
       
-      // Run notification in background (don't wait for completion)
-      notifyNewProduct(product)
-        .then((result) => {
-          console.log(`📧 Notification summary: ${result.sent} sent, ${result.failed} failed`);
-        })
-        .catch((error) => {
-          console.error('❌ Notification error:', error.message);
-        });
+      try {
+        // Get all newsletter subscribers
+        const subscribers = await Guest.find({ 
+          newsletterSubscribed: true 
+        }).select('email name');
+        
+        let emailsSent = 0;
+        let emailsFailed = 0;
+        
+        // Send emails to all subscribers
+        for (const subscriber of subscribers) {
+          try {
+            await emailService.sendNewProductNotification(subscriber.email, {
+              _id: product._id,
+              name: product.name,
+              description: product.description,
+              price: product.price,
+              originalPrice: product.originalPrice,
+              image: product.images?.[0]?.url,
+              category: product.category
+            });
+            emailsSent++;
+          } catch (emailError) {
+            console.error(`❌ Failed to send email to ${subscriber.email}:`, emailError);
+            emailsFailed++;
+          }
+        }
+        
+        console.log(`📧 New product notifications: ${emailsSent} sent, ${emailsFailed} failed`);
+      } catch (error) {
+        console.error('❌ New product notification error:', error);
+      }
     } else {
       console.log('⚠️ Product is inactive - no notifications sent');
     }
+
     
     res.status(201).json({
       success: true,

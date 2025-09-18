@@ -6,7 +6,6 @@ console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Present ✅' : 'Missi
 
 // Initialize Brevo API
 let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
-
 if (process.env.BREVO_API_KEY) {
   let apiKey = apiInstance.authentications['apiKey'];
   apiKey.apiKey = process.env.BREVO_API_KEY;
@@ -23,20 +22,18 @@ const sendEmail = async (to, subject, htmlContent, senderName = 'Mindy Munchs') 
     }
 
     let sendSmtpEmail = new SibApiV3Sdk.SendSmtpEmail();
-    
     sendSmtpEmail.subject = subject;
     sendSmtpEmail.htmlContent = htmlContent;
     sendSmtpEmail.textContent = htmlContent.replace(/<[^>]*>/g, '');
     sendSmtpEmail.sender = { 
       name: senderName, 
-      email: process.env.BREVO_SENDER_EMAIL || process.env.EMAIL_USER || 'noreply@mindymunchs.com'
+      email: process.env.BREVO_SENDER_EMAIL || 'noreply@mindymunchs.com' 
     };
     sendSmtpEmail.to = [{ email: to }];
 
     console.log(`📧 Sending email via Brevo API to ${to}`);
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
     console.log(`✅ Email sent successfully via Brevo to ${to}`);
-    
     return result;
   } catch (error) {
     console.error(`❌ Failed to send email via Brevo to ${to}:`, error.response?.body || error.message);
@@ -44,127 +41,202 @@ const sendEmail = async (to, subject, htmlContent, senderName = 'Mindy Munchs') 
   }
 };
 
-// Welcome Email
-exports.sendWelcomeEmail = async (email, name) => {
+// Welcome Email for Newsletter Subscribers
+exports.sendWelcomeEmail = async (email, name = 'Valued Customer') => {
   const subject = '🎉 Welcome to Mindy Munchs Family!';
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa;">
-      <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 32px;">Welcome to Mindy Munchs! 🎉</h1>
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px 20px; background: #f8f9fa; }
+        .button { background: #ff6b6b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Welcome to Mindy Munchs!</h1>
+        </div>
+        <div class="content">
+          <h2>Thank you for joining our family, ${name}!</h2>
+          <p>We're thrilled to have you as part of the Mindy Munchs community. You'll be the first to know about:</p>
+          <ul>
+            <li>🍿 New product launches</li>
+            <li>🎉 Exclusive offers and discounts</li>
+            <li>📰 Health tips and recipes</li>
+            <li>🌟 Special promotions</li>
+          </ul>
+          <p>Stay tuned for delicious updates!</p>
+        </div>
+        <div class="footer">
+          <p>© 2025 Mindy Munchs. All rights reserved.</p>
+          <p><small>You received this email because you subscribed to our newsletter.</small></p>
+        </div>
       </div>
-      <div style="padding: 40px 20px; background: white;">
-        <h2 style="color: #333;">Hello ${name}! 👋</h2>
-        <p style="font-size: 16px; color: #555;">Thank you for joining the Mindy Munchs family!</p>
-      </div>
-    </div>
+    </body>
+    </html>
   `;
-  await sendEmail(email, subject, htmlContent);
-};
-
-// Password Reset Email - THIS IS THE MISSING FUNCTION!
-exports.sendPasswordReset = async (email, resetToken) => {
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-  const subject = '🔐 Reset Your Mindy Munchs Password';
   
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa;">
-      <div style="background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); padding: 40px 20px; text-align: center;">
-        <h1 style="color: white; margin: 0;">Password Reset Request 🔐</h1>
-      </div>
-      <div style="padding: 40px 20px; background: white;">
-        <p style="font-size: 16px; color: #555;">
-          We received a request to reset your Mindy Munchs account password.
-        </p>
-        
-        <div style="background: #fff5f5; padding: 25px; border-radius: 8px; margin: 25px 0;">
-          <h3 style="color: #ff6b6b;">🔗 Reset Your Password</h3>
-          <p style="color: #555;">Click the button below to create a new password. This link will expire in 1 hour.</p>
-          
-          <div style="text-align: center; margin: 25px 0;">
-            <a href="${resetUrl}" 
-               style="background: #ff6b6b; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              🔐 Reset Password
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-
-  await sendEmail(email, subject, htmlContent);
-  console.log(`✅ Password reset email sent to ${email}`);
+  return await sendEmail(email, subject, htmlContent);
 };
 
-// New Product Notification Email
-exports.sendNewProductNotification = async (email, productData, userName = 'Valued Customer') => {
-  const subject = `🎉 New Product Launch: ${productData.name} - Mindy Munchs`;
+// Newsletter Email
+exports.sendNewsletterEmail = async (email, subject, htmlContent) => {
+  return await sendEmail(email, subject, htmlContent);
+};
+
+// New Product Notification
+exports.sendNewProductNotification = async (email, productData, name = 'Valued Customer') => {
+  const subject = `🆕 Fresh arrival from Mindy Munchs: ${productData.name}`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 20px; text-align: center; }
+        .product { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .price { color: #ff6b6b; font-size: 24px; font-weight: bold; }
+        .original-price { text-decoration: line-through; color: #999; margin-left: 10px; }
+        .button { background: #ff6b6b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🆕 New Product Alert!</h1>
+          <h2>Hi ${name}!</h2>
+        </div>
+        <div class="product">
+          <h2>${productData.name}</h2>
+          ${productData.image ? `<img src="${productData.image}" alt="${productData.name}" style="max-width: 100%; height: auto; border-radius: 5px;">` : ''}
+          <p>${productData.description || 'Discover the authentic taste and premium quality that makes this product special!'}</p>
+          <div class="price">
+            ₹${productData.price.toLocaleString('en-IN')}
+            ${productData.originalPrice && productData.originalPrice > productData.price ? 
+              `<span class="original-price">₹${productData.originalPrice.toLocaleString('en-IN')}</span>` : ''}
+          </div>
+          ${productData.category ? `<p><strong>Category:</strong> ${productData.category}</p>` : ''}
+          <a href="${process.env.FRONTEND_URL}/product/${productData._id}" class="button">Shop Now</a>
+        </div>
+        <div class="footer">
+          <p>© 2025 Mindy Munchs. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
   
-  const htmlContent = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8f9fa;">
-      <div style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); padding: 40px 20px; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 32px;">🎉 New Product Alert!</h1>
-        <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">Fresh arrival from Mindy Munchs</p>
-      </div>
-      
-      <div style="padding: 40px 20px; background: white;">
-        <h2 style="color: #333; margin-top: 0;">Hello ${userName}! 👋</h2>
-        <p style="font-size: 16px; color: #555; margin-bottom: 25px;">
-          We're excited to introduce our newest addition to the Mindy Munchs family:
-        </p>
-        
-        <div style="background: #f8f9fa; padding: 30px; border-radius: 12px; margin: 30px 0; text-align: center; border-left: 5px solid #28a745;">
-          ${productData.images && productData.images[0] ? 
-            `<img src="${productData.images[0].url || productData.images[0]}" alt="${productData.name}" style="width: 200px; height: 200px; object-fit: cover; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">` : 
-            ''
-          }
-          
-          <h3 style="color: #28a745; margin: 0 0 15px 0; font-size: 24px;">${productData.name}</h3>
-          
-          <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 2px solid #28a745;">
-            <p style="margin: 0; font-size: 28px; font-weight: bold; color: #28a745;">
-              ₹${productData.price.toLocaleString('en-IN')}
-              ${productData.originalPrice && productData.originalPrice > productData.price ? 
-                `<span style="text-decoration: line-through; color: #999; font-weight: normal; font-size: 18px; margin-left: 10px;">₹${productData.originalPrice.toLocaleString('en-IN')}</span>` : 
-                ''
-              }
-            </p>
-            ${productData.category ? `<p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">Category: ${productData.category}</p>` : ''}
-          </div>
-          
-          <p style="font-size: 16px; color: #555; line-height: 1.6; margin: 20px 0;">
-            ${productData.description || 'Discover the authentic taste and premium quality that makes this product special!'}
-          </p>
-        </div>
-        
-        <div style="text-align: center; margin: 40px 0;">
-          <a href="${process.env.FRONTEND_URL}/products/${productData._id || productData.id}" 
-             style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 18px 35px; text-decoration: none; border-radius: 50px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);">
-            🛍️ Shop Now
-          </a>
-        </div>
-      </div>
-      
-      <div style="text-align: center; padding: 20px; background: #f8f9fa; color: #666; font-size: 12px;">
-        <p style="margin: 0 0 10px 0;">© 2025 Mindy Munchs. All rights reserved.</p>
-      </div>
-    </div>
-  `;
-
-  await sendEmail(email, subject, htmlContent);
-  console.log(`✅ New product notification sent to ${email} for product: ${productData.name}`);
-};
-
-// Alternative function name (in case your auth controller uses this name)
-exports.sendPasswordResetEmail = async (email, resetToken) => {
-  return await exports.sendPasswordReset(email, resetToken);
+  return await sendEmail(email, subject, htmlContent);
 };
 
 // Order Confirmation Email
-exports.sendOrderConfirmation = async (email, orderDetails) => {
-  // ... (add if needed)
+exports.sendOrderConfirmation = async (email, orderData) => {
+  const subject = `Order Confirmation #${orderData.orderId} - Mindy Munchs`;
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 20px; text-align: center; }
+        .order-details { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }
+        .item { border-bottom: 1px solid #ddd; padding: 10px 0; }
+        .total { background: #fff; padding: 15px; border-radius: 5px; margin: 10px 0; font-weight: bold; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Order Confirmed! 🎉</h1>
+        </div>
+        <div class="order-details">
+          <h2>Order #${orderData.orderId}</h2>
+          <p><strong>Date:</strong> ${new Date(orderData.createdAt).toLocaleDateString('en-IN')}</p>
+          <p><strong>Delivery Address:</strong><br>${orderData.shippingAddress.address}<br>${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.pincode}</p>
+          
+          <h3>Order Items:</h3>
+          ${orderData.items.map(item => `
+            <div class="item">
+              <strong>${item.name}</strong><br>
+              Quantity: ${item.quantity} × ₹${item.price.toLocaleString('en-IN')} = ₹${(item.quantity * item.price).toLocaleString('en-IN')}
+            </div>
+          `).join('')}
+          
+          <div class="total">
+            <p>Total Amount: ₹${orderData.totalAmount.toLocaleString('en-IN')}</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>Thank you for shopping with Mindy Munchs!</p>
+          <p>© 2025 Mindy Munchs. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  return await sendEmail(email, subject, htmlContent);
 };
 
-// Newsletter Email (keep your existing one)
-exports.sendNewsletterEmail = async (to, subject, htmlContent) => {
-  await sendEmail(to, subject, htmlContent, 'Mindy Munchs Newsletter');
+// Password Reset Email
+exports.sendPasswordResetEmail = async (email, resetToken) => {
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+  const subject = 'Reset Your Mindy Munchs Password';
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 20px; text-align: center; }
+        .content { padding: 30px 20px; background: #f8f9fa; }
+        .button { background: #ff6b6b; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>Password Reset Request</h1>
+        </div>
+        <div class="content">
+          <h2>Reset Your Password</h2>
+          <p>We received a request to reset your Mindy Munchs account password.</p>
+          <p>Click the button below to create a new password. This link will expire in 1 hour.</p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${resetUrl}" class="button">Reset Password</a>
+          </div>
+          <div class="warning">
+            <p><strong>Security Note:</strong> If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>© 2025 Mindy Munchs. All rights reserved.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+  
+  return await sendEmail(email, subject, htmlContent);
+};
+
+module.exports = {
+  sendWelcomeEmail: exports.sendWelcomeEmail,
+  sendNewsletterEmail: exports.sendNewsletterEmail,
+  sendNewProductNotification: exports.sendNewProductNotification,
+  sendOrderConfirmation: exports.sendOrderConfirmation,
+  sendPasswordResetEmail: exports.sendPasswordResetEmail
 };

@@ -2,6 +2,9 @@ const { validationResult } = require('express-validator');
 const Order = require('../models/Order');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
+const emailService = require('../services/emailService');
+const User = require('../models/User');
+
 
 // Create new order
 const createOrder = async (req, res) => {
@@ -75,6 +78,24 @@ const createOrder = async (req, res) => {
     });
 
     await order.save();
+    // Send order confirmation email
+    try {
+      const user = await User.findById(req.user._id);
+      const orderData = {
+        orderId: order._id,
+        createdAt: order.createdAt,
+        items: orderItems,
+        totalAmount,
+        shippingAddress
+      };
+      
+      await emailService.sendOrderConfirmation(user.email, orderData);
+      console.log(`✅ Order confirmation email sent to ${user.email}`);
+    } catch (emailError) {
+      console.error('❌ Failed to send order confirmation email:', emailError);
+      // Don't fail the order if email fails
+    }
+
 
     // Update product stock
     for (const item of cart.items) {

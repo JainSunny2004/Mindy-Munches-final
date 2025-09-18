@@ -305,10 +305,10 @@ const forgotPassword = async (req, res) => {
 
     // 3️⃣ Build URL → prefer env var, fall back to request origin
     const baseURL = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
-    const resetURL = `${baseURL}/reset-password/${resetToken}`; // [web:25]
+    const resetURL = `${baseURL}/reset-password?token=${resetToken}`; // [web:25]
 
     // 4️⃣ Send e-mail (emailService has a dev-mode logger)
-    await emailService.sendPasswordResetEmail(user.email, resetURL);
+    await emailService.sendPasswordResetEmail(user.email, resetToken);
 
     return res.json({
       success: true,
@@ -372,41 +372,41 @@ const resetPassword = async (req, res) => {
   }
 };
 
-// Newsletter subscription
-const subscribeNewsletter = async (req, res) => {
-  try {
-    const { email, name } = req.body; // <-- ENSURE NAME IS AVAILABLE
+// // Newsletter subscription
+// const subscribeNewsletter = async (req, res) => {
+//   try {
+//     const { email, name } = req.body; // <-- ENSURE NAME IS AVAILABLE
 
-    // Check if the email is already registered as a user
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      // ... same logic ...
-      return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
-    }
+//     // Check if the email is already registered as a user
+//     const existingUser = await User.findOne({ email });
+//     if (existingUser) {
+//       // ... same logic ...
+//       return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
+//     }
 
-    // Check if the email is already registered as a guest
-    const existingGuest = await Guest.findOne({ email });
-   if (existingGuest) {
-      // ... same logic ...
-      return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
-    }
+//     // Check if the email is already registered as a guest
+//     const existingGuest = await Guest.findOne({ email });
+//    if (existingGuest) {
+//       // ... same logic ...
+//       return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
+//     }
 
-    // If not found, create a new guest entry
-    await Guest.create({ email, name });
+//     // If not found, create a new guest entry
+//     await Guest.create({ email, name });
 
-    res.json({
-      success: true,
-      message: 'Successfully subscribed to newsletter'
-    });
-  } catch (error) {
-    console.error('Newsletter subscription error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to subscribe to newsletter',
-      error: error.message
-    });
-  }
-};
+//     res.json({
+//       success: true,
+//       message: 'Successfully subscribed to newsletter'
+//     });
+//   } catch (error) {
+//     console.error('Newsletter subscription error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to subscribe to newsletter',
+//       error: error.message
+//     });
+//   }
+// };
 
 module.exports = {
   register,
@@ -418,5 +418,4 @@ module.exports = {
   changePassword,
   forgotPassword,
   resetPassword,
-  subscribeNewsletter
 };

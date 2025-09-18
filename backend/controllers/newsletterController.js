@@ -32,11 +32,15 @@ exports.subscribeToNewsletter = async (req, res) => {
       });
     }
 
+    let isNewSubscription = false;
+
     // If guest exists but not subscribed, update subscription
     if (existingGuest) {
       existingGuest.newsletterSubscribed = true;
       existingGuest.subscriptionSource = source;
       await existingGuest.save();
+      isNewSubscription = true;
+      console.log(`✅ Updated guest subscription for ${email}`);
     } else {
       // Create new guest subscriber
       const guest = new Guest({
@@ -46,11 +50,24 @@ exports.subscribeToNewsletter = async (req, res) => {
         subscriptionSource: source
       });
       await guest.save();
+      isNewSubscription = true;
+      console.log(`✅ Created new guest subscription for ${email}`);
+    }
+
+    // Send welcome email for new subscriptions
+    if (isNewSubscription) {
+      try {
+        await emailService.sendWelcomeEmail(email, name || 'Valued Customer');
+        console.log(`✅ Welcome email sent to ${email}`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send welcome email to ${email}:`, emailError);
+        // Don't fail the subscription if email fails - log but continue
+      }
     }
 
     res.status(201).json({
       success: true,
-      message: 'Successfully subscribed to newsletter!'
+      message: 'Successfully subscribed to newsletter! Check your email for a welcome message.'
     });
 
   } catch (error) {
@@ -69,6 +86,7 @@ exports.subscribeToNewsletter = async (req, res) => {
     });
   }
 };
+
 
 // Send newsletter to all subscribers
 exports.sendNewsletter = async (req, res) => {
