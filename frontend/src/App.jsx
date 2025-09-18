@@ -189,24 +189,21 @@ function App() {
                 </ProtectedRoute>
               }
             />
-            
-             <Route
+
+            <Route
               path="/reset-password"
               element={
-                <ProtectedRoute requiredRole="admin">
-                  <motion.div
-                    initial="initial"
-                    animate="in"
-                    exit="out"
-                    variants={pageVariants}
-                    transition={pageTransition}
-                  >
-                    <ResetPasswordPage />
-                  </motion.div>
-                </ProtectedRoute>
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <ResetPasswordPage />
+                </motion.div>
               }
             />
-
 
             {/*Static Pages*/}
             <Route

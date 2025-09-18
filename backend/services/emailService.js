@@ -189,7 +189,7 @@ exports.sendOrderConfirmation = async (email, orderData) => {
 };
 
 // Password Reset Email
-exports.sendPasswordResetEmail = async (email, resetUrl) => { // Changed parameter name
+exports.sendPasswordResetEmail = async (email, resetUrl) => {
   const subject = 'Reset Your Mindy Munchs Password';
   const htmlContent = `
     <!DOCTYPE html>
@@ -213,7 +213,7 @@ exports.sendPasswordResetEmail = async (email, resetUrl) => { // Changed paramet
         <div class="content">
           <h2>Reset Your Password</h2>
           <p>We received a request to reset your Mindy Munchs account password.</p>
-          <p>Click the button below to create a new password. This link will expire in 1 hour.</p>
+          <p>Click the button below to create a new password. This link will expire in 15 minutes.</p>
           <div style="text-align: center; margin: 30px 0;">
             <a href="${resetUrl}" class="button">Reset Password</a>
           </div>
@@ -232,7 +232,6 @@ exports.sendPasswordResetEmail = async (email, resetUrl) => { // Changed paramet
   
   return await sendEmail(email, subject, htmlContent);
 };
-
 
 module.exports = {
   sendWelcomeEmail: exports.sendWelcomeEmail,
