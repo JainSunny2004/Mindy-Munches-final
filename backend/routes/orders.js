@@ -11,36 +11,29 @@ const createOrderValidation = [
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('Name must be between 2 and 50 characters'),
-  
   body('shippingAddress.phone')
     .trim()
     .isMobilePhone('any', { strictMode: false })
     .withMessage('Please provide a valid phone number'),
-  
   body('shippingAddress.street')
     .trim()
     .isLength({ min: 5, max: 100 })
     .withMessage('Street address must be between 5 and 100 characters'),
-  
   body('shippingAddress.city')
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('City must be between 2 and 50 characters'),
-  
   body('shippingAddress.state')
     .trim()
     .isLength({ min: 2, max: 50 })
     .withMessage('State must be between 2 and 50 characters'),
-  
   body('shippingAddress.zipCode')
     .trim()
-    .matches(/^[0-9]{6}$/)
-    .withMessage('ZIP code must be 6 digits'),
-  
+    .isLength({ min: 5, max: 10 })
+    .withMessage('ZIP code must be between 5 and 10 characters'),
   body('paymentMethod')
-    .isIn(['cod', 'card', 'upi', 'netbanking'])
-    .withMessage('Invalid payment method'),
-  
+    .isIn(['cod', 'razorpay'])
+    .withMessage('Payment method must be either COD or Razorpay'),
   body('notes')
     .optional()
     .trim()
@@ -49,35 +42,24 @@ const createOrderValidation = [
 ];
 
 const updateOrderStatusValidation = [
-  body('status')
-    .optional()
+  body('orderStatus')
     .isIn(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'])
     .withMessage('Invalid order status'),
-  
-  body('trackingNumber')
+  body('paymentStatus')
     .optional()
-    .trim()
-    .isLength({ min: 5, max: 50 })
-    .withMessage('Tracking number must be between 5 and 50 characters'),
-  
-  body('note')
-    .optional()
-    .trim()
-    .isLength({ max: 200 })
-    .withMessage('Note cannot exceed 200 characters')
+    .isIn(['pending', 'paid', 'failed', 'refunded'])
+    .withMessage('Invalid payment status')
 ];
 
-// User routes (require authentication)
-router.use(authenticate);
+// ✅ ADMIN ROUTES FIRST (more specific routes should come first)
+router.get('/admin/all', authenticate, requireAdmin, orderController.getAllOrders);
+router.get('/admin/analytics', authenticate, requireAdmin, orderController.getOrderAnalytics);
+router.patch('/admin/:id/status', authenticate, requireAdmin, updateOrderStatusValidation, orderController.updateOrderStatus);
 
-router.post('/', createOrderValidation, orderController.createOrder);
-router.get('/my-orders', orderController.getUserOrders);
-router.get('/:id', orderController.getOrderById);
-router.post('/:id/cancel', orderController.cancelOrder);
-
-// Admin routes
-router.get('/', requireAdmin, orderController.getAllOrders);
-router.patch('/:id/status', requireAdmin, updateOrderStatusValidation, orderController.updateOrderStatus);
-router.get('/analytics/summary', requireAdmin, orderController.getOrderAnalytics);
+// ✅ USER ROUTES (less specific routes come after)
+router.get('/', authenticate, orderController.getUserOrders);
+router.post('/', authenticate, createOrderValidation, orderController.createOrder);
+router.get('/:id', authenticate, orderController.getOrderById);
+router.post('/:id/cancel', authenticate, orderController.cancelOrder);
 
 module.exports = router;

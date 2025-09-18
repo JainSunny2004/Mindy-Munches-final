@@ -113,7 +113,6 @@ exports.verifyPayment = async (req, res) => {
       orderStatus: 'confirmed',
       subtotal: orderDetails.subtotal || orderDetails.totalAmount,
       shippingCost: orderDetails.shipping || 0,
-      tax: orderDetails.tax || 0,
       totalAmount: orderDetails.totalAmount,
       razorpayOrderId: razorpay_order_id,
       razorpayPaymentId: razorpay_payment_id,

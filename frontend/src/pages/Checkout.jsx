@@ -48,14 +48,42 @@ const Checkout = () => {
     }
   }, [items.length, navigate, showSuccess]);
 
+  useEffect(() => {
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      // Check if Razorpay is already loaded
+      if (window.Razorpay) {
+        console.log('✅ Razorpay script already loaded');
+        resolve(true);
+        return;
+      }
+      
+      console.log('📦 Loading Razorpay script...');
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => {
+        console.log('✅ Razorpay script loaded successfully');
+        resolve(true);
+      };
+      script.onerror = () => {
+        console.error('❌ Failed to load Razorpay script');
+        resolve(false);
+      };
+      document.body.appendChild(script);
+    });
+  };
+  
+  loadRazorpayScript();
+}, []); 
+
   const formatPrice = (price) => {
     return `₹ ${(price / 100).toLocaleString("en-IN")}`;
   };
 
   const subtotal = getTotal();
   const shipping = subtotal >= 50000 ? 0 : 5000; // Free shipping above ₹500
-  const tax = Math.round(subtotal * 0.18); // 18% GST
-  const total = subtotal + shipping + tax;
+  //const tax = Math.round(subtotal * 0.18); // 18% GST
+  const total = subtotal + shipping;
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -167,7 +195,7 @@ const handleRazorpayPayment = (razorpayOrderId) => {
   
   try {
     // Step 1: Create Razorpay order
-    const orderResponse = await fetch('/api/payment/create-razorpay-order', {
+    const orderResponse = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-razorpay-order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -192,7 +220,7 @@ const handleRazorpayPayment = (razorpayOrderId) => {
     const paymentResponse = await handleRazorpayPayment(razorpayOrderId);
 
     // Step 3: Verify payment and create order
-    const verifyResponse = await fetch('/api/payment/verify-payment', {
+    const verifyResponse = await fetch(`${import.meta.env.VITE_API_URL}/payments/verify-payment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -210,7 +238,6 @@ const handleRazorpayPayment = (razorpayOrderId) => {
           items: items,
           subtotal: subtotal,
           shipping: shipping,
-          tax: tax,
           totalAmount: total
         }
       })
@@ -526,10 +553,6 @@ const handleRazorpayPayment = (razorpayOrderId) => {
                       formatPrice(shipping)
                     )}
                   </span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-neutral-600">Tax (18% GST)</span>
-                  <span className="font-medium">{formatPrice(tax)}</span>
                 </div>
                 <div className="border-t border-neutral-200 pt-2">
                   <div className="flex justify-between">

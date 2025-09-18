@@ -9,8 +9,8 @@ export const useOrders = () => {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!isAuthenticated || !user?.id || !token) {
-        console.log('Auth check failed:', { isAuthenticated, userId: user?.id, hasToken: !!token })
+      if (!isAuthenticated || (!user?._id && !user?.id) || !token) {
+        console.log('Auth check failed:', { isAuthenticated, userId: user?._id, hasToken: !!token })
         setLoading(false)
         return
       }
@@ -19,10 +19,10 @@ export const useOrders = () => {
         setLoading(true)
         setError(null)
 
-        console.log('Fetching orders for user:', user.id)
+        console.log('Fetching orders for user:',user._id || user.id)
         console.log('Using token:', token ? 'Token exists' : 'No token')
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/orders/my-orders`, {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/orders`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -54,7 +54,7 @@ export const useOrders = () => {
     }
 
     fetchOrders()
-  }, [user?.id, token, isAuthenticated])
+  }, [user?._id || user?.id, token, isAuthenticated])
 
   const currentOrders = orders.filter(order => 
     ['pending', 'confirmed', 'processing', 'shipped'].includes(order.orderStatus)
@@ -65,7 +65,7 @@ export const useOrders = () => {
   )
 
   const refetch = () => {
-    if (isAuthenticated && user?.id && token) {
+    if (isAuthenticated && (user?._id || user?.id) && token) {
       setError(null)
       setLoading(true)
     }

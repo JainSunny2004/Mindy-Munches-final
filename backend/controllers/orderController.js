@@ -51,8 +51,8 @@ const createOrder = async (req, res) => {
     // Calculate order totals
     const subtotal = cart.totalAmount;
     const shippingCost = subtotal > 500 ? 0 : 50; // Free shipping above ₹500
-    const tax = Math.round(subtotal * 0.18); // 18% GST
-    const totalAmount = subtotal + shippingCost + tax;
+    //const tax = Math.round(subtotal * 0.18); // 18% GST
+    const totalAmount = subtotal + shippingCost;
 
     // Create order items
     const orderItems = cart.items.map(item => ({
@@ -71,7 +71,6 @@ const createOrder = async (req, res) => {
       paymentMethod,
       subtotal,
       shippingCost,
-      tax,
       totalAmount,
       notes,
       estimatedDelivery: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days from now
@@ -328,10 +327,10 @@ const getAllOrders = async (req, res) => {
 // Update order status (Admin only)
 const updateOrderStatus = async (req, res) => {
   try {
-    const { status, trackingNumber, note } = req.body;
-
+    const { orderStatus, trackingNumber, note } = req.body; // ✅ FIXED: Use 'orderStatus'
+    
     const order = await Order.findById(req.params.id);
-
+    
     if (!order) {
       return res.status(404).json({
         success: false,
@@ -340,14 +339,16 @@ const updateOrderStatus = async (req, res) => {
     }
 
     // Update order
-    if (status) order.orderStatus = status;
+    if (orderStatus) order.orderStatus = orderStatus; // ✅ FIXED: Use 'orderStatus'
     if (trackingNumber) order.trackingNumber = trackingNumber;
 
-    // Add to status history
+    // Add to status history if needed
     if (note) {
+      order.statusHistory = order.statusHistory || [];
       order.statusHistory.push({
-        status: status || order.orderStatus,
-        note
+        status: orderStatus || order.orderStatus,
+        note,
+        updatedAt: new Date()
       });
     }
 
@@ -356,9 +357,7 @@ const updateOrderStatus = async (req, res) => {
     res.json({
       success: true,
       message: 'Order status updated successfully',
-      data: {
-        order
-      }
+      data: { order }
     });
   } catch (error) {
     console.error('Update order status error:', error);
@@ -369,6 +368,7 @@ const updateOrderStatus = async (req, res) => {
     });
   }
 };
+
 
 // Get order analytics (Admin only)
 const getOrderAnalytics = async (req, res) => {

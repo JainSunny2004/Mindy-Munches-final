@@ -2,10 +2,11 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 
-// Route to create a new Razorpay order
-router.post('/create-razorpay-order', paymentController.createRazorpayOrder);
+const { authenticate } = require('../middleware/auth');
 
-// Route to verify the payment signature after a successful transaction
-router.post('/verify-payment', paymentController.verifyPayment);
+// ✅ FIXED: Add authenticate middleware to both routes
+router.post('/create-razorpay-order', authenticate, paymentController.createRazorpayOrder);
+router.post('/verify-payment', authenticate, paymentController.verifyPayment);
+
 
 module.exports = router;

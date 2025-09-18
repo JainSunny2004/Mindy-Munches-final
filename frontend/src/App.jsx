@@ -16,6 +16,12 @@ import AdminInvite from "./pages/AdminInvite";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomBar from "./components/BottomBar";
 
+import PaymentTest from "./components/PaymentTest";
+
+// Add this import at the top
+import { useEffect } from "react";
+import useAuthStore from "./store/authStore";
+
 //Static Pages
 import Sattu from "./pages/Sattu";
 import Makhana from "./pages/Makhana";
@@ -40,6 +46,13 @@ const pageTransition = {
 
 function App() {
   const location = useLocation();
+
+  const { initializeAuth } = useAuthStore();
+
+  // Add this useEffect
+  useEffect(() => {
+    initializeAuth();
+  }, [initializeAuth]);
 
   return (
     <div className="min-h-screen bg-neutral-50 flex flex-col overflow-x-hidden max-w-full">
@@ -201,6 +214,21 @@ function App() {
                   transition={pageTransition}
                 >
                   <ResetPasswordPage />
+                </motion.div>
+              }
+            />
+
+            <Route
+              path="/payment-test"
+              element={
+                <motion.div
+                  initial="initial"
+                  animate="in"
+                  exit="out"
+                  variants={pageVariants}
+                  transition={pageTransition}
+                >
+                  <PaymentTest />
                 </motion.div>
               }
             />
