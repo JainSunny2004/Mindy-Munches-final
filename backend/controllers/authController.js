@@ -45,6 +45,30 @@ const register = async (req, res) => {
 
     await user.save();
 
+    // ** AUTO-SUBSCRIBE TO NEWSLETTER **
+    try {
+      // Check if email already exists in Guest collection
+      const existingGuest = await Guest.findOne({ email: user.email });
+      
+      if (!existingGuest) {
+        // Create new guest subscriber
+        const guest = new Guest({
+          email: user.email,
+          name: user.name,
+          newsletterSubscribed: true
+        });
+        await guest.save();
+      }
+
+      // Send welcome email
+      await emailService.sendWelcomeEmail(user.email, user.name);
+      console.log(`✅ Auto-subscribed and welcomed: ${user.email}`);
+      
+    } catch (emailError) {
+      console.error('Newsletter auto-subscription error:', emailError);
+      // Don't fail registration if newsletter fails
+    }
+
     // Generate token
     const token = generateToken(user._id);
 
