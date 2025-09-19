@@ -11,12 +11,21 @@ const AdminManagement = () => {
   const [error, setError] = useState('');
   const { token, user } = useAuthStore();
 
+  // 🛡️ SUPER ADMIN PROTECTION SYSTEM
+  const SUPER_ADMIN_EMAILS = [
+    'mindymunchs@gmail.com',
+    'sunnyjainpvt1401@gmail.com'
+  ];
+
   // Protected admin emails (cannot be demoted)
   const protectedEmails = [
-    'mindymunchs@gmail.com',
-    'sunnyjain1401@gmail.com', // Your developer email
+    ...SUPER_ADMIN_EMAILS,
     user?.email // Current user's email
   ];
+
+  // 🛡️ Helper functions
+  const isSuperAdmin = (email) => SUPER_ADMIN_EMAILS.includes(email);
+  const isProtectedAdmin = (email) => protectedEmails.includes(email);
 
   // Fetch all current admins
   const fetchAdmins = async () => {
@@ -111,7 +120,7 @@ const AdminManagement = () => {
       }
 
       // Success - refresh both lists
-      alert(`${userName} has been promoted to admin successfully!`);
+      alert(`✅ ${userName} has been promoted to admin successfully!`);
       await fetchAdmins();
       
       // Remove from search results
@@ -120,19 +129,36 @@ const AdminManagement = () => {
     } catch (error) {
       console.error('Failed to promote user:', error);
       setError(error.message || 'Failed to promote user');
+      alert(`❌ Failed to promote user: ${error.message}`);
     } finally {
       setLoading(false);
     }
   };
 
-  // Demote admin to user
+  // 🛡️ Enhanced demote admin with super admin protection
   const demoteAdmin = async (adminId, adminName, adminEmail) => {
-    if (protectedEmails.includes(adminEmail)) {
-      alert(`${adminName} is protected and cannot be demoted.`);
+    
+    // 🛡️ SUPER ADMIN PROTECTION CHECK
+    if (isSuperAdmin(adminEmail)) {
+      alert(`🛡️ ${adminName} is a Super Administrator and cannot be demoted.\n\n⚠️ Super Admins are permanently protected:\n• mindymunchs@gmail.com\n• sunnyjainpvt1401@gmail.com\n\nThis action has been logged for security purposes.`);
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to remove ${adminName} (${adminEmail}) as admin?`)) {
+    // 🔒 REGULAR PROTECTION CHECK
+    if (isProtectedAdmin(adminEmail)) {
+      alert(`🔒 ${adminName} is protected and cannot be demoted.`);
+      return;
+    }
+
+    // 🚨 Double confirmation for admin demotion
+    const confirmMessage = `⚠️ ADMIN DEMOTION WARNING\n\nYou are about to remove ${adminName} (${adminEmail}) as administrator.\n\nThis will:\n• Revoke all admin privileges\n• Remove access to admin dashboard\n• Convert account to regular user\n\nThis action cannot be undone easily.\n\nProceed with demotion?`;
+    
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    // Final confirmation
+    if (!window.confirm(`🔴 FINAL CONFIRMATION\n\nDemote ${adminName} to regular user?`)) {
       return;
     }
 
@@ -158,12 +184,19 @@ const AdminManagement = () => {
       }
 
       // Success - refresh admin list
-      alert(`${adminName} has been demoted to user successfully!`);
+      alert(`✅ ${adminName} has been demoted to user successfully!`);
       await fetchAdmins();
       
     } catch (error) {
       console.error('Failed to demote admin:', error);
       setError(error.message || 'Failed to demote admin');
+      
+      // Enhanced error handling
+      if (error.message.includes('super administrator') || error.message.includes('protected')) {
+        alert('🛡️ This admin is protected and cannot be demoted.');
+      } else {
+        alert(`❌ Failed to demote admin: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
@@ -174,7 +207,7 @@ const AdminManagement = () => {
     fetchAdmins();
   }, []);
 
-  // Search users when search term changes
+  // Search users when search term changes (debounced)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       searchUsers();
@@ -196,7 +229,8 @@ const AdminManagement = () => {
       {/* Error Message */}
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-          {error}
+          <p className="font-semibold">⚠️ Error</p>
+          <p className="text-sm mt-1">{error}</p>
         </div>
       )}
 
@@ -218,7 +252,7 @@ const AdminManagement = () => {
           <button
             onClick={searchUsers}
             disabled={searchLoading || !searchTerm.trim()}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
           >
             {searchLoading ? (
               <>
@@ -246,7 +280,7 @@ const AdminManagement = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50"
+                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
               >
                 <div className="flex items-center space-x-4">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -275,6 +309,7 @@ const AdminManagement = () => {
 
           {searchTerm && !searchLoading && searchResults.length === 0 && (
             <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">🔍</div>
               <p>No users found matching "{searchTerm}"</p>
               <p className="text-sm mt-1">Try searching by email or name</p>
             </div>
@@ -298,7 +333,8 @@ const AdminManagement = () => {
             </p>
             
             {admins.map((admin) => {
-              const isProtected = protectedEmails.includes(admin.email);
+              const isSuper = isSuperAdmin(admin.email);
+              const isProtected = isProtectedAdmin(admin.email);
               const isCurrentUser = admin.email === user?.email;
               
               return (
@@ -317,14 +353,24 @@ const AdminManagement = () => {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium text-gray-900">{admin.name}</p>
+                        
                         {isCurrentUser && (
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
                             You
                           </span>
                         )}
-                        {isProtected && (
+                        
+                        {/* 🛡️ SUPER ADMIN BADGE */}
+                        {isSuper && (
+                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-semibold">
+                            🛡️ Super Admin
+                          </span>
+                        )}
+                        
+                        {/* 🔒 PROTECTED BADGE (for non-super protected admins) */}
+                        {isProtected && !isSuper && (
                           <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
-                            🛡️ Protected
+                            🔒 Protected
                           </span>
                         )}
                       </div>
@@ -345,6 +391,7 @@ const AdminManagement = () => {
                       ✅ Active Admin
                     </span>
                     
+                    {/* 🚫 NO REMOVE BUTTON FOR PROTECTED ADMINS */}
                     {!isProtected && (
                       <button
                         onClick={() => demoteAdmin(admin._id, admin.name, admin.email)}
@@ -354,33 +401,60 @@ const AdminManagement = () => {
                         {loading ? 'Processing...' : '❌ Remove Admin'}
                       </button>
                     )}
+                    
+                    {/* 🛡️ PROTECTION INDICATOR */}
+                    {isProtected && (
+                      <span className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm cursor-not-allowed">
+                        {isSuper ? '🛡️ Super Admin' : '🔒 Protected'}
+                      </span>
+                    )}
                   </div>
                 </motion.div>
               );
             })}
             
-            {admins.length === 0 && (
+            {admins.length === 0 && !loading && (
               <div className="text-center py-8 text-gray-500">
+                <div className="text-4xl mb-2">👥</div>
                 <p>No administrators found</p>
+                <p className="text-sm mt-1">Promote users to create administrators</p>
               </div>
             )}
           </div>
         )}
       </div>
 
-      {/* Security Information */}
+      {/* 🛡️ Enhanced Security Information */}
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h4 className="flex items-center text-blue-800 font-semibold mb-2">
-          <span className="mr-2">ℹ️</span>
+          <span className="mr-2">🛡️</span>
           Security Information
         </h4>
         <ul className="text-blue-700 text-sm space-y-1">
+          <li>• <strong>Super Admins</strong> (mindymunchs@gmail.com & sunnyjainpvt1401@gmail.com) cannot be demoted</li>
           <li>• Protected admins cannot be demoted for security reasons</li>
           <li>• Only existing administrators can promote users</li>
           <li>• All role changes are logged and tracked</li>
           <li>• Users must have existing accounts to be promoted</li>
           <li>• Demoted admins will lose all admin privileges immediately</li>
+          <li>• Super Admin protection requires code changes to modify</li>
         </ul>
+      </div>
+
+      {/* 🛡️ Super Admin Status Display */}
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <h4 className="flex items-center text-red-800 font-semibold mb-2">
+          <span className="mr-2">⚠️</span>
+          Super Administrator Protection
+        </h4>
+        <div className="text-red-700 text-sm">
+          <p className="mb-2">The following accounts are permanently protected:</p>
+          <ul className="list-disc list-inside space-y-1 ml-2">
+            <li><code className="bg-red-100 px-2 py-1 rounded">mindymunchs@gmail.com</code></li>
+            <li><code className="bg-red-100 px-2 py-1 rounded">sunnyjainpvt1401@gmail.com</code></li>
+          </ul>
+          <p className="mt-2 text-xs">These accounts cannot be demoted by any user, including each other.</p>
+        </div>
       </div>
     </div>
   );

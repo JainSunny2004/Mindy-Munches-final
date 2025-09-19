@@ -1,323 +1,656 @@
-/* eslint-disable no-unused-vars */
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import useAuthStore from "../../store/authStore";
+import {
+  getStockStats,
+  updateProductStock,
+  restockLowItems,
+} from "../../utils/adminApi";
 
 const StockManagement = () => {
-  const [products, setProducts] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [updateMode, setUpdateMode] = useState({})
+  const [stockData, setStockData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [restocking, setRestocking] = useState(false);
+  const [updating, setUpdating] = useState({});
+  const [activeTab, setActiveTab] = useState("overview");
+
+  // ✅ Toast notification state
+  const [toast, setToast] = useState({
+    show: false,
+    message: "",
+    type: "success",
+  });
+
+  // Modal states
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [newStockValue, setNewStockValue] = useState("");
+  const [modalLoading, setModalLoading] = useState(false);
+
+  const { token } = useAuthStore();
+
+  // ✅ Toast notification function
+  const showToast = (message, type = "success") => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: "", type: "success" });
+    }, 3000);
+  };
+
+  // Fetch stock data using proper API
+  const fetchStockData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await getStockStats(token);
+      setStockData(response.data);
+    } catch (error) {
+      console.error("Error fetching stock data:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Open update modal
+  const openUpdateModal = (product) => {
+    setSelectedProduct(product);
+    setNewStockValue(product.stock.toString());
+    setShowUpdateModal(true);
+  };
+
+  // Close update modal
+  const closeUpdateModal = () => {
+    setShowUpdateModal(false);
+    setSelectedProduct(null);
+    setNewStockValue("");
+    setModalLoading(false);
+  };
+
+  // ✅ Handle modal stock update - NO ALERT
+  const handleModalStockUpdate = async () => {
+    if (!selectedProduct || newStockValue === "") return;
+
+    const newStock = parseInt(newStockValue);
+    if (isNaN(newStock) || newStock < 0) {
+      showToast("Please enter a valid stock number (0 or greater)", "error");
+      return;
+    }
+
+    try {
+      setModalLoading(true);
+
+      await updateProductStock(selectedProduct._id, newStock, "set", token);
+
+      // Refresh stock data
+      await fetchStockData();
+
+      // ✅ Using toast instead of alert
+      showToast(`Stock updated: ${selectedProduct.name} → ${newStock} units`);
+      closeUpdateModal();
+    } catch (error) {
+      console.error("Error updating stock:", error);
+      showToast(`Failed to update stock: ${error.message}`, "error");
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
+  // ✅ Handle bulk restock - NO ALERT
+  const handleBulkRestock = async () => {
+    if (!stockData?.lowStock || stockData.lowStock === 0) {
+      showToast("No low stock items to restock!", "warning");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Restock all ${stockData.lowStock} low stock items to 100 units each?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setRestocking(true);
+
+      const response = await restockLowItems(100, token);
+
+      // ✅ Using toast instead of alert
+      showToast(
+        `Successfully restocked ${response.data.modifiedCount} products to 100 units each!`
+      );
+
+      // Refresh stock data
+      await fetchStockData();
+    } catch (error) {
+      console.error("Error restocking:", error);
+      showToast(`Failed to restock: ${error.message}`, "error");
+    } finally {
+      setRestocking(false);
+    }
+  };
 
   useEffect(() => {
-    loadProducts()
-  }, [])
-
-  const loadProducts = async () => {
-    try {
-      setLoading(true)
-      const token = localStorage.getItem('token');
-      if (!token) throw new Error('No auth token found');
-      const response = await fetch('/api/products', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      setProducts(data.data.products || [])
-    } catch (error) {
-      console.error('Error loading products:', error)
-      setProducts([])
-    } finally {
-      setLoading(false)
+    if (token) {
+      fetchStockData();
     }
-  }
+  }, [token]);
 
-  const updateStock = (productId, newStock) => {
-    setProducts(prev =>
-      prev.map(product =>
-        product.id === productId ? { ...product, stock: newStock } : product
-      )
-    )
-    setUpdateMode(prev => ({ ...prev, [productId]: false }))
-  }
-
+  // ✅ UPDATED: Three-tier stock status system
   const getStockStatus = (stock) => {
-    if (stock === 0) return { label: 'Out of Stock', color: 'bg-red-100 text-red-800', icon: '❌' }
-    if (stock <= 5) return { label: 'Low Stock', color: 'bg-yellow-100 text-yellow-800', icon: '⚠️' }
-    if (stock <= 20) return { label: 'Medium Stock', color: 'bg-blue-100 text-blue-800', icon: '📦' }
-    return { label: 'High Stock', color: 'bg-green-100 text-green-800', icon: '✅' }
-  }
+    if (stock === 0)
+      return {
+        label: "Out of Stock",
+        color: "bg-red-100 text-red-800",
+        icon: "❌",
+      };
+    if (stock < 50)
+      return {
+        label: "Critical Stock",
+        color: "bg-red-100 text-red-800",
+        icon: "🚨",
+      };
+    if (stock < 100)
+      return {
+        label: "Medium Stock",
+        color: "bg-yellow-100 text-yellow-800",
+        icon: "⚠️",
+      };
+    return {
+      label: "Well Stocked",
+      color: "bg-green-100 text-green-800",
+      icon: "✅",
+    };
+  };
 
-  const bulkUpdateStock = (action) => {
-    const updates = {}
-    
-    if (action === 'restock-low') {
-      products.forEach(product => {
-        if (product.stock <= 5) {
-          updates[product.id] = 50 // Restock to 50
-        }
-      })
-    }
-    
-    if (Object.keys(updates).length > 0) {
-      setProducts(prev =>
-        prev.map(product =>
-          updates[product.id] ? { ...product, stock: updates[product.id] } : product
-        )
-      )
-      
-      alert(`Updated stock for ${Object.keys(updates).length} products`)
-    }
-  }
+  const formatPrice = (price) => {
+    return price ? `₹${(price / 100).toLocaleString("en-IN")}` : "₹0";
+  };
+
+  // ✅ UPDATED: Render product tile with correct three-tier colors
+  const renderProductTile = (product, showUpdateButton = true) => {
+    const status = getStockStatus(product.stock);
+
+    return (
+      <div
+        key={product._id}
+        className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:shadow-sm transition-shadow"
+      >
+        <div className="flex items-center space-x-4">
+          {product.images?.[0] && (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="w-16 h-16 object-cover rounded-lg border"
+            />
+          )}
+          <div>
+            <h4 className="font-medium text-gray-900">{product.name}</h4>
+            <p className="text-sm text-gray-600">{product.category}</p>
+            <p className="text-sm font-medium">{formatPrice(product.price)}</p>
+            <span
+              className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${status.color} mt-1`}
+            >
+              {status.icon} {product.stock} in stock
+            </span>
+          </div>
+        </div>
+
+        {showUpdateButton && (
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Current Stock</p>
+              {/* ✅ FIXED: Three-tier color system for stock numbers */}
+              <p
+                className={`text-2xl font-bold ${
+                  product.stock === 0
+                    ? "text-red-600" // 0 = Red
+                    : product.stock < 50 // 1-49 = Red
+                    ? "text-red-600"
+                    : product.stock < 100 // 50-99 = Yellow
+                    ? "text-yellow-600"
+                    : "text-green-600" // 100+ = Green
+                }`}
+              >
+                {product.stock}
+              </p>
+            </div>
+            <button
+              onClick={() => openUpdateModal(product)}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium flex items-center gap-2"
+            >
+              📝 Update Stock
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center p-12">
+      <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-neutral-600">Loading inventory...</p>
+          <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading inventory...</p>
         </div>
       </div>
-    )
+    );
   }
 
-  const lowStockItems = products.filter(p => p.stock <= 5)
-  const outOfStockItems = products.filter(p => p.stock === 0)
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <p className="font-semibold">Error loading stock data</p>
+        <p className="text-sm mt-1">{error}</p>
+        <button
+          onClick={fetchStockData}
+          className="mt-3 px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
-      {/* Header & Quick Actions */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-heading font-bold text-neutral-800">Stock Management</h2>
-          <p className="text-neutral-600">Monitor and update inventory levels</p>
-        </div>
-        
-        <div className="flex flex-wrap gap-3">
+      {/* ✅ Toast Notification */}
+      {toast.show && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -50 }}
+          className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+            toast.type === "success"
+              ? "bg-green-500 text-white"
+              : toast.type === "error"
+              ? "bg-red-500 text-white"
+              : "bg-yellow-500 text-white"
+          }`}
+        >
+          <span className="text-lg">
+            {toast.type === "success"
+              ? "✅"
+              : toast.type === "error"
+              ? "❌"
+              : "⚠️"}
+          </span>
+          <span className="font-medium">{toast.message}</span>
           <button
-            onClick={() => bulkUpdateStock('restock-low')}
-            className="btn-primary text-sm"
-            disabled={lowStockItems.length === 0}
+            onClick={() =>
+              setToast({ show: false, message: "", type: "success" })
+            }
+            className="ml-2 text-white hover:text-gray-200"
           >
-            🔄 Restock Low Items ({lowStockItems.length})
+            ✕
           </button>
-        </div>
-      </div>
-
-      {/* Stock Alerts */}
-      {(lowStockItems.length > 0 || outOfStockItems.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {outOfStockItems.length > 0 && (
-            <motion.div
-              className="bg-red-50 border border-red-200 rounded-lg p-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-            >
-              <h3 className="font-semibold text-red-800 mb-2">
-                ❌ Out of Stock ({outOfStockItems.length})
-              </h3>
-              <div className="space-y-1">
-                {outOfStockItems.slice(0, 3).map(product => (
-                  <p key={product.id} className="text-sm text-red-700">
-                    • {product.name}
-                  </p>
-                ))}
-                {outOfStockItems.length > 3 && (
-                  <p className="text-sm text-red-600">
-                    ... and {outOfStockItems.length - 3} more
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
-
-          {lowStockItems.length > 0 && (
-            <motion.div
-              className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h3 className="font-semibold text-yellow-800 mb-2">
-                ⚠️ Low Stock Alert ({lowStockItems.length})
-              </h3>
-              <div className="space-y-1">
-                {lowStockItems.slice(0, 3).map(product => (
-                  <p key={product.id} className="text-sm text-yellow-700">
-                    • {product.name} ({product.stock} left)
-                  </p>
-                ))}
-                {lowStockItems.length > 3 && (
-                  <p className="text-sm text-yellow-600">
-                    ... and {lowStockItems.length - 3} more
-                  </p>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </div>
+        </motion.div>
       )}
 
-      {/* Stock Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-100 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-neutral-50 border-b border-neutral-200">
-              <tr>
-                <th className="text-left p-4 font-semibold text-neutral-800">Product</th>
-                <th className="text-left p-4 font-semibold text-neutral-800">Category</th>
-                <th className="text-left p-4 font-semibold text-neutral-800">Current Stock</th>
-                <th className="text-left p-4 font-semibold text-neutral-800">Status</th>
-                <th className="text-left p-4 font-semibold text-neutral-800">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {products.map((product, index) => {
-                const status = getStockStatus(product.stock)
-                const isUpdating = updateMode[product.id]
-                
-                return (
-                  <motion.tr
-                    key={product.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="hover:bg-neutral-25 transition-colors"
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center space-x-3">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                          className="w-12 h-12 rounded-lg object-cover border border-neutral-200"
-                        />
-                        <div>
-                          <p className="font-semibold text-neutral-800">{product.name}</p>
-                          <p className="text-sm text-neutral-500">ID: {product.id}</p>
-                        </div>
-                      </div>
-                    </td>
-                    
-                    <td className="p-4">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-primary-100 text-primary-800">
-                        {product.category}
-                      </span>
-                    </td>
-                    
-                    <td className="p-4">
-                      {isUpdating ? (
-                        <div className="flex items-center space-x-2">
-                          <input
-                            type="number"
-                            min="0"
-                            defaultValue={product.stock}
-                            className="w-20 px-2 py-1 border border-neutral-300 rounded text-sm focus:ring-2 focus:ring-primary-300 focus:border-primary-500 outline-none"
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                updateStock(product.id, parseInt(e.target.value))
-                              } else if (e.key === 'Escape') {
-                                setUpdateMode(prev => ({ ...prev, [product.id]: false }))
-                              }
-                            }}
-                            autoFocus
-                          />
-                          <button
-                            onClick={(e) => {
-                              const input = e.target.parentNode.querySelector('input')
-                              updateStock(product.id, parseInt(input.value))
-                            }}
-                            className="p-1 text-green-600 hover:bg-green-50 rounded"
-                          >
-                            ✓
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-lg font-semibold ${
-                            product.stock === 0 ? 'text-red-600' : 
-                            product.stock <= 5 ? 'text-yellow-600' : 'text-green-600'
-                          }`}>
-                            {product.stock}
-                          </span>
-                          <span className="text-sm text-neutral-500">units</span>
-                        </div>
-                      )}
-                    </td>
-                    
-                    <td className="p-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${status.color}`}>
-                        <span className="mr-1">{status.icon}</span>
-                        {status.label}
-                      </span>
-                    </td>
-                    
-                    <td className="p-4">
-                      <div className="flex items-center space-x-2">
-                        {!isUpdating ? (
-                          <>
-                            <button
-                              onClick={() => setUpdateMode(prev => ({ ...prev, [product.id]: true }))}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="Update Stock"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                            </button>
-                            
-                            {product.stock <= 5 && (
-                              <button
-                                onClick={() => updateStock(product.id, 50)}
-                                className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-lg hover:bg-green-200 transition-colors"
-                              >
-                                Quick Restock
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => setUpdateMode(prev => ({ ...prev, [product.id]: false }))}
-                            className="p-2 text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
-                            title="Cancel"
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </motion.tr>
-                )
-              })}
-            </tbody>
-          </table>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Stock Management</h2>
+          <p className="text-gray-600 mt-1">
+            Monitor and update inventory levels
+          </p>
         </div>
+
+        {/* Restock Button */}
+        {stockData?.lowStock > 0 && (
+          <button
+            onClick={handleBulkRestock}
+            disabled={restocking}
+            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+          >
+            {restocking ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                Restocking...
+              </>
+            ) : (
+              <>📦 Restock Low Items ({stockData.lowStock})</>
+            )}
+          </button>
+        )}
       </div>
 
-      {/* Stock Summary */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      {/* Stock Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: 'Total Products', value: products.length, color: 'bg-blue-500' },
-          { label: 'Out of Stock', value: outOfStockItems.length, color: 'bg-red-500' },
-          { label: 'Low Stock', value: lowStockItems.length, color: 'bg-yellow-500' },
-          { label: 'Well Stocked', value: products.filter(p => p.stock > 20).length, color: 'bg-green-500' }
+          {
+            label: "Total Products",
+            value: stockData?.totalProducts || 0,
+            color: "text-gray-900",
+            bgColor: "bg-blue-100",
+            icon: "📦",
+          },
+          {
+            label: "Out of Stock",
+            value: stockData?.outOfStock || 0,
+            color: "text-red-600",
+            bgColor: "bg-red-100",
+            icon: "📭",
+          },
+          {
+            label: "Low Stock",
+            value: stockData?.lowStock || 0,
+            color: "text-yellow-600",
+            bgColor: "bg-yellow-100",
+            icon: "⚠️",
+          },
+          {
+            label: "Well Stocked",
+            value: stockData?.wellStocked || 0,
+            color: "text-green-600",
+            bgColor: "bg-green-100",
+            icon: "✅",
+          },
         ].map((stat, index) => (
           <motion.div
             key={stat.label}
-            className="bg-white rounded-lg p-4 shadow-sm border border-neutral-100"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
+            className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm"
           >
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-neutral-600">{stat.label}</p>
-                <p className="text-2xl font-bold text-neutral-800">{stat.value}</p>
+                <p className="text-gray-600 text-sm font-medium">
+                  {stat.label}
+                </p>
+                <p className={`text-2xl font-bold mt-1 ${stat.color}`}>
+                  {stat.value}
+                </p>
               </div>
-              <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center`}>
-                <span className="text-white text-lg">📊</span>
+              <div
+                className={`w-12 h-12 ${stat.bgColor} rounded-lg flex items-center justify-center`}
+              >
+                <span className="text-xl">{stat.icon}</span>
               </div>
             </div>
           </motion.div>
         ))}
       </div>
-    </div>
-  )
-}
 
-export default StockManagement
+      {/* Tab Navigation */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="flex border-b border-gray-200">
+          {[
+            { id: "overview", label: "Overview", count: null },
+            { id: "low-stock", label: "Low Stock", count: stockData?.lowStock },
+            {
+              id: "out-of-stock",
+              label: "Out of Stock",
+              count: stockData?.outOfStock,
+            },
+            {
+              id: "well-stocked",
+              label: "Well Stocked",
+              count: stockData?.wellStocked,
+            },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`px-6 py-4 text-sm font-medium transition-colors ${
+                activeTab === tab.id
+                  ? "border-b-2 border-orange-500 bg-orange-50 text-orange-600"
+                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+              }`}
+            >
+              {tab.label}
+              {tab.count !== null && tab.count > 0 && (
+                <span className="ml-2 bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">
+                  {tab.count}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6">
+          <AnimatePresence mode="wait">
+            {activeTab === "overview" && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="text-center py-8"
+              >
+                <div className="text-4xl mb-4">📋</div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Stock Overview
+                </h3>
+                <p className="text-gray-600">
+                  You have {stockData?.totalProducts || 0} active products in
+                  your inventory.
+                  {stockData?.lowStock > 0 && (
+                    <span className="block mt-2 text-yellow-600">
+                      ⚠️ {stockData.lowStock} products need restocking
+                    </span>
+                  )}
+                  {stockData?.outOfStock > 0 && (
+                    <span className="block mt-1 text-red-600">
+                      🚨 {stockData.outOfStock} products are out of stock
+                    </span>
+                  )}
+                  {stockData?.wellStocked > 0 && (
+                    <span className="block mt-1 text-green-600">
+                      ✅ {stockData.wellStocked} products are well stocked
+                    </span>
+                  )}
+                </p>
+              </motion.div>
+            )}
+
+            {activeTab === "low-stock" && (
+              <motion.div
+                key="low-stock"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Low Stock Products
+                  </h3>
+                  {stockData?.lowStockProducts?.length > 0 ? (
+                    <div className="space-y-3">
+                      {stockData.lowStockProducts.map((product) =>
+                        renderProductTile(product)
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">✅</div>
+                      <p>No low stock products!</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === "out-of-stock" && (
+              <motion.div
+                key="out-of-stock"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Out of Stock Products
+                  </h3>
+                  {stockData?.outOfStockProducts?.length > 0 ? (
+                    <div className="space-y-3">
+                      {stockData.outOfStockProducts.map((product) =>
+                        renderProductTile(product)
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">📦</div>
+                      <p>No out of stock products!</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+
+            {/* ✅ FIXED: Well Stocked Tab with proper product mapping */}
+            {activeTab === "well-stocked" && (
+              <motion.div
+                key="well-stocked"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+              >
+                <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Well Stocked Products
+                  </h3>
+                  {stockData?.wellStockedProducts?.length > 0 ? (
+                    <div className="space-y-3">
+                      {stockData.wellStockedProducts.map((product) =>
+                        renderProductTile(product)
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <div className="text-4xl mb-2">📦</div>
+                      <p>No well stocked products found!</p>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Stock Update Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="bg-white rounded-xl max-w-md w-full p-6 shadow-xl"
+          >
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Update Stock
+            </h3>
+
+            {selectedProduct && (
+              <div className="space-y-4">
+                {/* Product Info */}
+                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {selectedProduct.images?.[0] && (
+                    <img
+                      src={selectedProduct.images[0]}
+                      alt={selectedProduct.name}
+                      className="w-12 h-12 object-cover rounded-lg"
+                    />
+                  )}
+                  <div>
+                    <h4 className="font-medium text-gray-900">
+                      {selectedProduct.name}
+                    </h4>
+                    <p className="text-sm text-gray-600">
+                      {selectedProduct.category}
+                    </p>
+                    <p className="text-sm text-orange-600">
+                      Current: {selectedProduct.stock} units
+                    </p>
+                  </div>
+                </div>
+
+                {/* Stock Input */}
+                <div>
+                  <label
+                    htmlFor="stock-input"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    New Stock Quantity
+                  </label>
+                  <input
+                    id="stock-input"
+                    type="number"
+                    min="0"
+                    value={newStockValue}
+                    onChange={(e) => setNewStockValue(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    placeholder="Enter stock quantity"
+                    autoFocus
+                  />
+                </div>
+
+                {/* ✅ FIXED: Quick Actions with updated preset */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setNewStockValue("0")}
+                    className="flex-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-sm"
+                  >
+                    Set to 0
+                  </button>
+                  <button
+                    onClick={() => setNewStockValue("50")}
+                    className="flex-1 px-3 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors text-sm"
+                  >
+                    Set to 50
+                  </button>
+                  <button
+                    onClick={() => setNewStockValue("100")}
+                    className="flex-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors text-sm"
+                  >
+                    Set to 100
+                  </button>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    onClick={closeUpdateModal}
+                    disabled={modalLoading}
+                    className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 disabled:bg-gray-100 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleModalStockUpdate}
+                    disabled={modalLoading || newStockValue === ""}
+                    className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                  >
+                    {modalLoading ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Stock"
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      {/* Last Updated */}
+      {stockData?.lastUpdated && (
+        <div className="text-center text-xs text-gray-500">
+          Last updated: {new Date(stockData.lastUpdated).toLocaleString()}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StockManagement;
