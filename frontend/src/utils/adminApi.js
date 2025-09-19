@@ -19,3 +19,46 @@ export const getDashboardStats = async (token) => {
   const data = await response.json()
   return data
 }
+
+export const searchUsers = async (searchTerm, token) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/search?q=${searchTerm}`, {
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
+export const getAllAdmins = async (token) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/admins`, {
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
+export const promoteUser = async (userId, token) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}/promote`, {
+    method: 'PATCH',
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
+export const demoteAdmin = async (userId, token) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}/demote`, {
+    method: 'PATCH',
+    headers: { 
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.json();
+};
+
