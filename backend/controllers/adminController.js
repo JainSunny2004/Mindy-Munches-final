@@ -56,7 +56,7 @@ const demoteAdmin = async (req, res) => {
     const { id } = req.params;
     
     // Protect certain admins from being demoted
-    const protectedEmails = ['admin@demo.com', 'your-email@domain.com'];
+    const protectedEmails = ['mindymunchs@gmail.com', 'sunnyjainpvt1401@gmail.com'];
     const targetUser = await User.findById(id);
     
     if (protectedEmails.includes(targetUser.email)) {
