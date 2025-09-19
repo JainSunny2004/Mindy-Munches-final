@@ -217,12 +217,12 @@ const AdminManagement = () => {
   }, [searchTerm]);
 
   return (
-    <div className="space-y-8">
+    <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6 md:space-y-8">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-center space-y-2 md:space-y-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Admin Management</h2>
-          <p className="text-gray-600 mt-1">Manage user roles and administrator permissions</p>
+          <h2 className="text-xl md:text-2xl font-bold text-gray-900">Admin Management</h2>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">Manage user roles and administrator permissions</p>
         </div>
       </div>
 
@@ -235,24 +235,24 @@ const AdminManagement = () => {
       )}
 
       {/* User Search Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">🔍 Promote User to Admin</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">🔍 Promote User to Admin</h3>
         
         {/* Search Input */}
-        <div className="flex gap-3 mb-4">
+        <div className="flex flex-col sm:flex-row gap-3 mb-4">
           <div className="flex-1">
             <input
               type="text"
               placeholder="Search users by email or name..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm md:text-base"
             />
           </div>
           <button
             onClick={searchUsers}
             disabled={searchLoading || !searchTerm.trim()}
-            className="px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+            className="w-full sm:w-auto px-4 md:px-6 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors text-sm md:text-base"
           >
             {searchLoading ? (
               <>
@@ -280,17 +280,17 @@ const AdminManagement = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="flex items-center justify-between p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 md:p-4 border border-gray-200 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors space-y-3 sm:space-y-0"
               >
-                <div className="flex items-center space-x-4">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-blue-600 font-semibold text-sm">
+                <div className="flex items-center space-x-3 md:space-x-4">
+                  <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-blue-600 font-semibold text-xs md:text-sm">
                       {searchUser.name?.charAt(0)?.toUpperCase() || 'U'}
                     </span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{searchUser.name}</p>
-                    <p className="text-sm text-gray-600">{searchUser.email}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 text-sm md:text-base truncate">{searchUser.name}</p>
+                    <p className="text-xs md:text-sm text-gray-600 truncate">{searchUser.email}</p>
                     <p className="text-xs text-gray-500">
                       Joined: {new Date(searchUser.createdAt).toLocaleDateString()}
                     </p>
@@ -299,7 +299,7 @@ const AdminManagement = () => {
                 <button
                   onClick={() => promoteUser(searchUser._id, searchUser.name, searchUser.email)}
                   disabled={loading}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+                  className="w-full sm:w-auto px-3 md:px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm md:text-base"
                 >
                   {loading ? 'Processing...' : '👑 Make Admin'}
                 </button>
@@ -308,26 +308,26 @@ const AdminManagement = () => {
           </AnimatePresence>
 
           {searchTerm && !searchLoading && searchResults.length === 0 && (
-            <div className="text-center py-8 text-gray-500">
-              <div className="text-4xl mb-2">🔍</div>
-              <p>No users found matching "{searchTerm}"</p>
-              <p className="text-sm mt-1">Try searching by email or name</p>
+            <div className="text-center py-6 md:py-8 text-gray-500">
+              <div className="text-3xl md:text-4xl mb-2">🔍</div>
+              <p className="text-sm md:text-base">No users found matching "{searchTerm}"</p>
+              <p className="text-xs md:text-sm mt-1">Try searching by email or name</p>
             </div>
           )}
         </div>
       </div>
 
       {/* Current Admins Section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">👥 Current Administrators</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 shadow-sm">
+        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">👥 Current Administrators</h3>
         
         {loading && admins.length === 0 ? (
-          <div className="text-center py-8">
+          <div className="text-center py-6 md:py-8">
             <div className="inline-block w-6 h-6 border-2 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-600 mt-2">Loading administrators...</p>
+            <p className="text-gray-600 mt-2 text-sm md:text-base">Loading administrators...</p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             <p className="text-sm text-gray-600 mb-4">
               Total administrators: {admins.length}
             </p>
@@ -342,52 +342,54 @@ const AdminManagement = () => {
                   key={admin._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors space-y-3 md:space-y-0"
                 >
-                  <div className="flex items-center space-x-4">
-                    <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                      <span className="text-orange-600 font-semibold text-sm">
+                  <div className="flex items-start md:items-center space-x-3 md:space-x-4 min-w-0 flex-1">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-orange-600 font-semibold text-xs md:text-sm">
                         {admin.name?.charAt(0)?.toUpperCase() || 'A'}
                       </span>
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium text-gray-900">{admin.name}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-1 md:gap-2 mb-1">
+                        <p className="font-medium text-gray-900 text-sm md:text-base">{admin.name}</p>
                         
                         {isCurrentUser && (
-                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
                             You
                           </span>
                         )}
                         
                         {/* 🛡️ SUPER ADMIN BADGE */}
                         {isSuper && (
-                          <span className="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full font-semibold">
+                          <span className="bg-red-100 text-red-800 text-xs px-2 py-0.5 rounded-full font-semibold">
                             🛡️ Super Admin
                           </span>
                         )}
                         
                         {/* 🔒 PROTECTED BADGE (for non-super protected admins) */}
                         {isProtected && !isSuper && (
-                          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full">
+                          <span className="bg-yellow-100 text-yellow-800 text-xs px-2 py-0.5 rounded-full">
                             🔒 Protected
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600">{admin.email}</p>
-                      <p className="text-xs text-gray-500">
-                        Admin since: {new Date(admin.createdAt).toLocaleDateString()}
-                      </p>
-                      {admin.lastLogin && (
+                      <p className="text-xs md:text-sm text-gray-600 break-all">{admin.email}</p>
+                      <div className="flex flex-col sm:flex-row sm:space-x-4 mt-1">
                         <p className="text-xs text-gray-500">
-                          Last login: {new Date(admin.lastLogin).toLocaleDateString()}
+                          Admin since: {new Date(admin.createdAt).toLocaleDateString()}
                         </p>
-                      )}
+                        {admin.lastLogin && (
+                          <p className="text-xs text-gray-500">
+                            Last login: {new Date(admin.lastLogin).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2">
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2">
+                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full text-center">
                       ✅ Active Admin
                     </span>
                     
@@ -396,7 +398,7 @@ const AdminManagement = () => {
                       <button
                         onClick={() => demoteAdmin(admin._id, admin.name, admin.email)}
                         disabled={loading}
-                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+                        className="px-3 md:px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-xs md:text-sm"
                       >
                         {loading ? 'Processing...' : '❌ Remove Admin'}
                       </button>
@@ -404,7 +406,7 @@ const AdminManagement = () => {
                     
                     {/* 🛡️ PROTECTION INDICATOR */}
                     {isProtected && (
-                      <span className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-sm cursor-not-allowed">
+                      <span className="px-3 md:px-4 py-2 bg-gray-100 text-gray-500 rounded-lg text-xs md:text-sm cursor-not-allowed text-center">
                         {isSuper ? '🛡️ Super Admin' : '🔒 Protected'}
                       </span>
                     )}
@@ -414,10 +416,10 @@ const AdminManagement = () => {
             })}
             
             {admins.length === 0 && !loading && (
-              <div className="text-center py-8 text-gray-500">
-                <div className="text-4xl mb-2">👥</div>
-                <p>No administrators found</p>
-                <p className="text-sm mt-1">Promote users to create administrators</p>
+              <div className="text-center py-6 md:py-8 text-gray-500">
+                <div className="text-3xl md:text-4xl mb-2">👥</div>
+                <p className="text-sm md:text-base">No administrators found</p>
+                <p className="text-xs md:text-sm mt-1">Promote users to create administrators</p>
               </div>
             )}
           </div>
@@ -425,12 +427,12 @@ const AdminManagement = () => {
       </div>
 
       {/* 🛡️ Enhanced Security Information */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h4 className="flex items-center text-blue-800 font-semibold mb-2">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 md:p-4">
+        <h4 className="flex items-center text-blue-800 font-semibold mb-2 text-sm md:text-base">
           <span className="mr-2">🛡️</span>
           Security Information
         </h4>
-        <ul className="text-blue-700 text-sm space-y-1">
+        <ul className="text-blue-700 text-xs md:text-sm space-y-1">
           <li>• <strong>Super Admins</strong> (mindymunchs@gmail.com & sunnyjainpvt1401@gmail.com) cannot be demoted</li>
           <li>• Protected admins cannot be demoted for security reasons</li>
           <li>• Only existing administrators can promote users</li>
@@ -442,16 +444,16 @@ const AdminManagement = () => {
       </div>
 
       {/* 🛡️ Super Admin Status Display */}
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-        <h4 className="flex items-center text-red-800 font-semibold mb-2">
+      <div className="bg-red-50 border border-red-200 rounded-lg p-3 md:p-4">
+        <h4 className="flex items-center text-red-800 font-semibold mb-2 text-sm md:text-base">
           <span className="mr-2">⚠️</span>
           Super Administrator Protection
         </h4>
-        <div className="text-red-700 text-sm">
+        <div className="text-red-700 text-xs md:text-sm">
           <p className="mb-2">The following accounts are permanently protected:</p>
           <ul className="list-disc list-inside space-y-1 ml-2">
-            <li><code className="bg-red-100 px-2 py-1 rounded">mindymunchs@gmail.com</code></li>
-            <li><code className="bg-red-100 px-2 py-1 rounded">sunnyjainpvt1401@gmail.com</code></li>
+            <li><code className="bg-red-100 px-2 py-1 rounded break-all">mindymunchs@gmail.com</code></li>
+            <li><code className="bg-red-100 px-2 py-1 rounded break-all">sunnyjainpvt1401@gmail.com</code></li>
           </ul>
           <p className="mt-2 text-xs">These accounts cannot be demoted by any user, including each other.</p>
         </div>

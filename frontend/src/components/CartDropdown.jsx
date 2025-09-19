@@ -324,7 +324,7 @@ const CartDropdown = ({ isOpen, onClose, isMobile = false }) => {
                     : 'bg-primary-600 hover:bg-primary-700 text-white'
                 }`}
               >
-                {!isAuthenticated ? 'Login & Proceed to Checkout' : 'Proceed to Checkout'}
+                {!isAuthenticated ? 'Proceed to Checkout' : 'Proceed to Checkout'}
               </button>
             </div>
             

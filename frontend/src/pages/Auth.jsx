@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuthStore from "../store/authStore";
-import { getUserRole } from "../utils/adminUsers";
+
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -15,6 +15,7 @@ const Auth = () => {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [forgotPasswordModalOpen, setForgotPasswordModalOpen] = useState(false);
 
@@ -22,8 +23,8 @@ const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Get return URL from location state - DEFAULT TO DASHBOARD
-  const from = location.state?.from || "/dashboard";
+  // Get return URL from location state - DEFAULT TO HOME PAGE
+  const from = location.state?.from || "/";
   const message = location.state?.message;
   const productName = location.state?.productName;
 
@@ -75,6 +76,21 @@ const Auth = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Helper function to determine redirect URL based on user role only
+  const getRedirectUrl = (user, originalFrom) => {
+    // Check if user role is admin
+    if (user.role === "admin") {
+      return "/admin";
+    }
+
+    // For regular users, redirect to home page unless coming from specific route
+    if (originalFrom && originalFrom !== "/" && originalFrom !== "/dashboard") {
+      return originalFrom;
+    }
+
+    return "/";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
@@ -114,18 +130,28 @@ const Auth = () => {
             token: data.data.token,
           });
 
-          // Navigate to dashboard
-          navigate(from, { replace: true });
+          // Determine redirect URL based on user role
+          const redirectUrl = getRedirectUrl(data.data.user, from);
+          console.log("User role:", data.data.user.role); // Debug
+          console.log("Redirecting to:", redirectUrl); // Debug
+
+          // Navigate to appropriate page
+          navigate(redirectUrl, { replace: true });
 
           // Show success notification
           setTimeout(() => {
             const notification = document.createElement("div");
             notification.className =
               "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm";
-            notification.textContent =
-              message && productName
-                ? `Welcome back! You can now add ${productName} to your cart.`
-                : "Welcome back! Check out your dashboard.";
+
+            const isAdmin = data.data.user.role === "admin";
+
+            notification.textContent = isAdmin
+              ? "Welcome back, Admin! Redirected to admin panel."
+              : message && productName
+              ? `Welcome back! You can now add ${productName} to your cart.`
+              : "Welcome back! You're now logged in.";
+
             document.body.appendChild(notification);
             setTimeout(() => {
               if (document.body.contains(notification)) {
@@ -168,15 +194,15 @@ const Auth = () => {
             token: data.data.token,
           });
 
-          // Navigate to dashboard
-          navigate("/dashboard", { replace: true });
+          // New users (non-admin) always go to home page
+          navigate("/", { replace: true });
 
           // Show welcome message
           setTimeout(() => {
             const notification = document.createElement("div");
             notification.className =
               "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm";
-            notification.textContent = `Welcome to Mindy Munchs, ${formData.name}! Explore your dashboard.`;
+            notification.textContent = `Welcome to Mindy Munchs, ${formData.name}! Start exploring our products.`;
             document.body.appendChild(notification);
             setTimeout(() => {
               if (document.body.contains(notification)) {
@@ -197,6 +223,7 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
+
   // New function to handle forgot password
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
@@ -225,6 +252,7 @@ const Auth = () => {
 
   const switchMode = () => {
     setIsLogin(!isLogin);
+    setShowPassword(false);
     setFormData({
       name: "",
       email: "",
@@ -232,91 +260,6 @@ const Auth = () => {
       confirmPassword: "",
     });
     setErrors({});
-  };
-
-  // Demo account options
-  const demoAccounts = [
-    {
-      email: "user@demo.com",
-      password: "demo123",
-      role: "user",
-      name: "Demo User",
-      description: "Regular customer account",
-    },
-    {
-      email: "admin@demo.com",
-      password: "admin123",
-      role: "admin",
-      name: "Demo Admin",
-      description: "Administrator account (pre-configured)",
-    },
-  ];
-
-  const loginWithDemo = async (account) => {
-    setIsLoading(true);
-    const apiUrl = import.meta.env.VITE_API_URL;
-
-    try {
-      // Use real demo login API
-      const response = await fetch(`${apiUrl}/auth/demo-login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          type: account.role, // 'user' or 'admin'
-        }),
-      });
-
-      const data = await response.json();
-      console.log("Demo login response:", data); // Debug
-
-      if (!response.ok) {
-        throw new Error(data.message || "Demo login failed");
-      }
-
-      if (data.success && data.data.token) {
-        // Store token in localStorage
-        localStorage.setItem("token", data.data.token);
-        console.log("Demo token saved:", localStorage.getItem("token")); // Debug
-
-        // Store user data in auth store
-        login({
-          user: data.data.user,
-          token: data.data.token,
-        });
-        console.log("Demo login redirecting to:", from);
-
-        // Navigate to dashboard or previous page
-        navigate(from, { replace: true });
-
-        // Show success message
-        setTimeout(() => {
-          const notification = document.createElement("div");
-          notification.className =
-            "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm";
-          notification.textContent =
-            message && productName
-              ? `Welcome back! You can now add ${productName} to your cart.`
-              : `Welcome back, ${data.data.user.name}! Check out your dashboard.`;
-          document.body.appendChild(notification);
-          setTimeout(() => {
-            if (document.body.contains(notification)) {
-              document.body.removeChild(notification);
-            }
-          }, 4000);
-        }, 100);
-      } else {
-        throw new Error("Invalid demo response format");
-      }
-    } catch (error) {
-      console.error("Demo login error:", error);
-      setErrors({
-        general: error.message || "Demo login failed. Please try again.",
-      });
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   return (
@@ -328,36 +271,34 @@ const Auth = () => {
           transition={{ duration: 0.6 }}
         >
           {/* Logo & Header */}
-          <div className="text-center mb-8">
-            <Link to="/" className="inline-flex items-center space-x-2 mb-6">
-              <div className="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-xl">M</span>
+          <div className="text-center mb-4">
+            <Link to="/" className="inline-flex items-center space-x-2">
+              <div className="w-20 h-20 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-xl"><img src="/Mindy Munchs_Logo-01.png"></img></span>
               </div>
-              <span className="font-heading text-2xl font-bold text-neutral-800">
-                Mindy Munchs
-              </span>
+              
             </Link>
 
-            <h1 className="text-3xl font-heading font-bold text-neutral-800 mb-2">
+            <h1 className="text-3xl font-heading font-bold text-neutral-800">
               {isLogin ? "Welcome back!" : "Join Mindy Munchs"}
             </h1>
             <p className="text-neutral-600">
               {isLogin
-                ? "Sign in to access your dashboard and continue shopping"
-                : "Create your account and get your personal dashboard"}
+                ? "Sign in to access your account and continue shopping"
+                : "Create your account and start exploring our products"}
             </p>
           </div>
 
           {/* Message from Product Add to Cart or Cart Access */}
           {message && (
             <motion.div
-              className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6"
+              className="bg-blue-50 border border-blue-200 rounded-lg p-4 "
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
             >
               <div className="flex items-center gap-2 text-blue-700">
                 <svg
-                  className="w-5 h-5"
+                  className="w-5 h-5 flex-shrink-0"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -369,15 +310,10 @@ const Auth = () => {
                     d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                   />
                 </svg>
-                <div>
-                  <p className="text-sm font-medium">{message}</p>
-                  {productName && (
-                    <p className="text-xs mt-1">Product: {productName}</p>
-                  )}
-                  <p className="text-xs mt-1 text-blue-600">
-                    You'll be redirected to:{" "}
-                    {from === "/dashboard" ? "Your Dashboard" : from}
-                  </p>
+                <div className="flex-1 ">
+                  <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mb-0">
+                    <p className="text-sm font-medium mb-0">{message}</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -464,18 +400,61 @@ const Auth = () => {
                     <label className="block text-sm font-medium text-neutral-700 mb-2">
                       Password
                     </label>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleInputChange}
-                      className={`input-field ${
-                        errors.password
-                          ? "border-red-300 focus:border-red-500 focus:ring-red-300"
-                          : ""
-                      }`}
-                      placeholder="Enter your password"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        className={`input-field pr-10 ${
+                          errors.password
+                            ? "border-red-300 focus:border-red-500 focus:ring-red-300"
+                            : ""
+                        }`}
+                        placeholder="Enter your password"
+                      />
+                      <button
+                        type="button"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <svg
+                            className="h-5 w-5 text-neutral-400 hover:text-neutral-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"
+                            />
+                          </svg>
+                        ) : (
+                          <svg
+                            className="h-5 w-5 text-neutral-400 hover:text-neutral-600"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
+                          </svg>
+                        )}
+                      </button>
+                    </div>
                     {errors.password && (
                       <p className="text-red-600 text-sm mt-1">
                         {errors.password}
@@ -509,16 +488,7 @@ const Auth = () => {
                     </div>
                   )}
 
-                  {/* Info message for signup */}
-                  {!isLogin && (
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                      <p className="text-blue-700 text-sm">
-                        <span className="font-medium">ℹ️ Note:</span> New
-                        accounts get a personal dashboard to track orders and
-                        manage profile.
-                      </p>
-                    </div>
-                  )}
+                 
                 </motion.div>
               </AnimatePresence>
 
@@ -569,45 +539,6 @@ const Auth = () => {
               >
                 {isLogin ? "Create new account" : "Sign in instead"}
               </button>
-            </div>
-
-            {/* Demo Accounts */}
-            <div className="mt-6 pt-6 border-t border-neutral-100">
-              <p className="text-sm text-neutral-600 text-center mb-4">
-                Demo accounts for testing:
-              </p>
-              <div className="space-y-2">
-                {demoAccounts.map((account, index) => (
-                  <button
-                    key={index}
-                    onClick={() => loginWithDemo(account)}
-                    disabled={isLoading}
-                    className="w-full text-left bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-lg p-3 transition-colors disabled:opacity-50"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-neutral-800 text-sm">
-                          {account.role === "admin"
-                            ? "👑 Admin Demo"
-                            : "👤 User Demo"}
-                        </div>
-                        <div className="text-xs text-neutral-600 mt-1">
-                          {account.description}
-                        </div>
-                        <div className="text-xs text-neutral-500 mt-1">
-                          {account.email}
-                        </div>
-                        <div className="text-xs text-blue-600 mt-1">
-                          → Goes to {from === "/dashboard" ? "Dashboard" : from}
-                        </div>
-                      </div>
-                      <div className="text-xs text-primary-600 font-medium">
-                        Login
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
             </div>
           </motion.div>
 

@@ -49,35 +49,35 @@ const Checkout = () => {
   }, [items.length, navigate, showSuccess]);
 
   useEffect(() => {
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      // Check if Razorpay is already loaded
-      if (window.Razorpay) {
-        console.log('✅ Razorpay script already loaded');
-        resolve(true);
-        return;
-      }
-      
-      console.log('📦 Loading Razorpay script...');
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => {
-        console.log('✅ Razorpay script loaded successfully');
-        resolve(true);
-      };
-      script.onerror = () => {
-        console.error('❌ Failed to load Razorpay script');
-        resolve(false);
-      };
-      document.body.appendChild(script);
-    });
-  };
-  
-  loadRazorpayScript();
-}, []); 
+    const loadRazorpayScript = () => {
+      return new Promise((resolve) => {
+        // Check if Razorpay is already loaded
+        if (window.Razorpay) {
+          console.log("✅ Razorpay script already loaded");
+          resolve(true);
+          return;
+        }
+
+        console.log("📦 Loading Razorpay script...");
+        const script = document.createElement("script");
+        script.src = "https://checkout.razorpay.com/v1/checkout.js";
+        script.onload = () => {
+          console.log("✅ Razorpay script loaded successfully");
+          resolve(true);
+        };
+        script.onerror = () => {
+          console.error("❌ Failed to load Razorpay script");
+          resolve(false);
+        };
+        document.body.appendChild(script);
+      });
+    };
+
+    loadRazorpayScript();
+  }, []);
 
   const formatPrice = (price) => {
-    return `₹ ${(price).toLocaleString("en-IN")}`;
+    return `₹ ${price.toLocaleString("en-IN")}`;
   };
 
   const subtotal = getTotal();
@@ -85,6 +85,45 @@ const Checkout = () => {
   //const tax = Math.round(subtotal * 0.18); // 18% GST
   const total = subtotal + shipping;
 
+  // Indian states and union territories
+  const indianStates = [
+    "Andhra Pradesh",
+    "Arunachal Pradesh",
+    "Assam",
+    "Bihar",
+    "Chhattisgarh",
+    "Goa",
+    "Gujarat",
+    "Haryana",
+    "Himachal Pradesh",
+    "Jharkhand",
+    "Karnataka",
+    "Kerala",
+    "Madhya Pradesh",
+    "Maharashtra",
+    "Manipur",
+    "Meghalaya",
+    "Mizoram",
+    "Nagaland",
+    "Odisha",
+    "Punjab",
+    "Rajasthan",
+    "Sikkim",
+    "Tamil Nadu",
+    "Telangana",
+    "Tripura",
+    "Uttar Pradesh",
+    "Uttarakhand",
+    "West Bengal",
+    "Andaman and Nicobar Islands",
+    "Chandigarh",
+    "Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi",
+    "Jammu and Kashmir",
+    "Ladakh",
+    "Lakshadweep",
+    "Puducherry",
+  ];
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -151,115 +190,124 @@ const Checkout = () => {
   };
 
   // Add this function to your Checkout.jsx component
-const handleRazorpayPayment = (razorpayOrderId) => {
-  return new Promise((resolve, reject) => {
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RIgXHSN9Xwq7U9',
-      amount: total * 100, // Convert to paise
-      currency: 'INR',
-      name: 'Mindy Munchs',
-      description: 'Order Payment',
-      order_id: razorpayOrderId,
-      handler: function (response) {
-        console.log('Razorpay payment successful:', response);
-        resolve(response);
-      },
-      prefill: {
-        name: orderData.name,
-        email: orderData.email,
-        contact: orderData.phone
-      },
-      theme: {
-        color: '#F37254'
-      },
-      modal: {
-        ondismiss: function() {
-          reject(new Error('Payment cancelled by user'));
-        }
-      }
-    };
+  const handleRazorpayPayment = (razorpayOrderId) => {
+    return new Promise((resolve, reject) => {
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_RIgXHSN9Xwq7U9",
+        amount: total * 100, // Convert to paise
+        currency: "INR",
+        name: "Mindy Munchs",
+        description: "Order Payment",
+        order_id: razorpayOrderId,
+        handler: function (response) {
+          console.log("Razorpay payment successful:", response);
+          resolve(response);
+        },
+        prefill: {
+          name: orderData.name,
+          email: orderData.email,
+          contact: orderData.phone,
+        },
+        theme: {
+          color: "#F37254",
+        },
+        modal: {
+          ondismiss: function () {
+            reject(new Error("Payment cancelled by user"));
+          },
+        },
+      };
 
-    if (window.Razorpay) {
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
-    } else {
-      reject(new Error('Razorpay SDK not loaded'));
-    }
-  });
-};
+      if (window.Razorpay) {
+        const razorpay = new window.Razorpay(options);
+        razorpay.open();
+      } else {
+        reject(new Error("Razorpay SDK not loaded"));
+      }
+    });
+  };
 
   const handlePlaceOrder = async () => {
-  if (!validateForm()) return;
-  
-  setIsProcessing(true);
-  
-  try {
-    // Step 1: Create Razorpay order
-    const orderResponse = await fetch(`${import.meta.env.VITE_API_URL}/payments/create-razorpay-order`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
-      },
-      body: JSON.stringify({
-        amount: total,
-        currency: 'INR',
-        orderData: {
-          name: orderData.name,
-          email: orderData.email,
-          phone: orderData.phone
+    if (!validateForm()) return;
+
+    setIsProcessing(true);
+
+    try {
+      // Step 1: Create Razorpay order
+      const orderResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/payments/create-razorpay-order`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(isAuthenticated && {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            }),
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: "INR",
+            orderData: {
+              name: orderData.name,
+              email: orderData.email,
+              phone: orderData.phone,
+            },
+          }),
         }
-      })
-    });
+      );
 
-    if (!orderResponse.ok) throw new Error('Failed to create order');
-    
-    const { id: razorpayOrderId } = await orderResponse.json();
+      if (!orderResponse.ok) throw new Error("Failed to create order");
 
-    // Step 2: Handle Razorpay payment
-    const paymentResponse = await handleRazorpayPayment(razorpayOrderId);
+      const { id: razorpayOrderId } = await orderResponse.json();
 
-    // Step 3: Verify payment and create order
-    const verifyResponse = await fetch(`${import.meta.env.VITE_API_URL}/payments/verify-payment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(isAuthenticated && { 'Authorization': `Bearer ${localStorage.getItem('token')}` })
-      },
-      body: JSON.stringify({
-        razorpay_order_id: paymentResponse.razorpay_order_id,
-        razorpay_payment_id: paymentResponse.razorpay_payment_id,
-        razorpay_signature: paymentResponse.razorpay_signature,
-        orderDetails: {
-          name: orderData.name,
-          email: orderData.email,
-          phone: orderData.phone,
-          address: orderData.address,
-          items: items,
-          subtotal: subtotal,
-          shipping: shipping,
-          totalAmount: total
+      // Step 2: Handle Razorpay payment
+      const paymentResponse = await handleRazorpayPayment(razorpayOrderId);
+
+      // Step 3: Verify payment and create order
+      const verifyResponse = await fetch(
+        `${import.meta.env.VITE_API_URL}/payments/verify-payment`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(isAuthenticated && {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            }),
+          },
+          body: JSON.stringify({
+            razorpay_order_id: paymentResponse.razorpay_order_id,
+            razorpay_payment_id: paymentResponse.razorpay_payment_id,
+            razorpay_signature: paymentResponse.razorpay_signature,
+            orderDetails: {
+              name: orderData.name,
+              email: orderData.email,
+              phone: orderData.phone,
+              address: orderData.address,
+              items: items,
+              subtotal: subtotal,
+              shipping: shipping,
+              totalAmount: total,
+            },
+          }),
         }
-      })
-    });
+      );
 
-    const result = await verifyResponse.json();
-    
-    if (result.success) {
-      clearCart();
-      setOrderId(result.orderNumber);
-      setShowSuccess(true);
-    } else {
-      throw new Error(result.message);
+      const result = await verifyResponse.json();
+
+      if (result.success) {
+        clearCart();
+        setOrderId(result.orderNumber);
+        setShowSuccess(true);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error("Order placement failed:", error);
+      alert(`Order failed: ${error.message}`);
+    } finally {
+      setIsProcessing(false);
     }
-
-  } catch (error) {
-    console.error('Order placement failed:', error);
-    alert(`Order failed: ${error.message}`);
-  } finally {
-    setIsProcessing(false);
-  }
-};
+  };
 
   if (showSuccess) {
     return (
@@ -430,23 +478,41 @@ const handleRazorpayPayment = (razorpayOrderId) => {
                       <label className="block text-sm font-medium text-neutral-700 mb-2">
                         State *
                       </label>
-                      <input
-                        type="text"
-                        name="address.state"
-                        value={orderData.address.state}
-                        onChange={handleInputChange}
-                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
-                          errors["address.state"]
-                            ? "border-red-500"
-                            : "border-neutral-300"
-                        }`}
-                        placeholder="State"
-                      />
-                      {errors["address.state"] && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors["address.state"]}
-                        </p>
-                      )}
+                      <div className="relative">
+                        <select
+                          name="address.state"
+                          value={orderData.address.state}
+                          onChange={handleInputChange}
+                          className={`w-full px-3 py-2 pr-10 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none bg-white ${
+                            errors["address.state"]
+                              ? "border-red-500"
+                              : "border-neutral-300"
+                          }`}
+                          required
+                        >
+                          <option value="">Select State</option>
+                          {indianStates.map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+                        </select>
+                        <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
+                          <svg
+                            className="w-4 h-4 text-gray-400"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M19 9l-7 7-7-7"
+                            />
+                          </svg>
+                        </div>
+                      </div>
                     </div>
 
                     <div>

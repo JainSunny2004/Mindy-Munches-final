@@ -225,12 +225,14 @@ const Navbar = () => {
                     </span>
                   )}
                 </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-base md:text-[17px] font-semibold text-neutral-700 hover:text-primary-500 transition-colors"
-                >
-                  Logout
-                </button>
+                <Link to="/">
+                  <button
+                    onClick={handleLogout}
+                    className="text-base md:text-[17px] font-semibold text-neutral-700 hover:text-primary-500 transition-colors"
+                  >
+                    Logout
+                  </button>
+                </Link>
               </div>
             ) : (
               <Link to="/auth" className="btn-primary text-sm">
@@ -340,7 +342,8 @@ const Navbar = () => {
                       </div>
                       <div>
                         <p className="font-semibold text-neutral-900">
-                          {getFirstName(user?.name)} {/* ✅ Show first name only */}
+                          {getFirstName(user?.name)}{" "}
+                          {/* ✅ Show first name only */}
                         </p>
                         <p className="text-sm text-neutral-600">
                           {user?.email || "user@example.com"}
