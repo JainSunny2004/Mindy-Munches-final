@@ -128,7 +128,7 @@ const getStockStats = async (req, res) => {
       lastUpdated: new Date().toISOString(),
     };
 
-    console.log("✅ Stock statistics calculated:", {
+    console.log(" Stock statistics calculated:", {
       totalProducts: stats.totalProducts,
       outOfStock: stats.outOfStock,
       lowStock: stats.lowStock,
@@ -140,7 +140,7 @@ const getStockStats = async (req, res) => {
       data: stats,
     });
   } catch (error) {
-    console.error("❌ Error calculating stock stats:", error);
+    console.error(" Error calculating stock stats:", error);
     res.status(500).json({
       success: false,
       message: "Failed to fetch stock statistics",
@@ -156,7 +156,7 @@ const updateStock = async (req, res) => {
     const { stock, operation = "set" } = req.body; // operation: 'set', 'add', 'subtract'
 
     console.log(
-      `🔄 Updating stock for product ${productId}: ${operation} ${stock}`
+      ` Updating stock for product ${productId}: ${operation} ${stock}`
     );
 
     const product = await Product.findById(productId);
@@ -197,7 +197,7 @@ const updateStock = async (req, res) => {
     ).select("name stock price category");
 
     console.log(
-      `✅ Stock updated: ${product.name} - ${product.stock || 0} → ${newStock}`
+      ` Stock updated: ${product.name} - ${product.stock || 0} → ${newStock}`
     );
 
     res.json({
@@ -206,7 +206,7 @@ const updateStock = async (req, res) => {
       message: `Stock updated successfully`,
     });
   } catch (error) {
-    console.error("❌ Error updating stock:", error);
+    console.error(" Error updating stock:", error);
     res.status(500).json({
       success: false,
       message: "Failed to update stock",
@@ -229,7 +229,7 @@ const restockLowItems = async (req, res) => {
       });
     }
 
-    console.log(`📦 Restocking low items to level: ${restockValue}`);
+    console.log(` Restocking low items to level: ${restockValue}`);
 
     // Update all low stock items (1-99 units)
     const result = await Product.updateMany(
@@ -242,7 +242,7 @@ const restockLowItems = async (req, res) => {
       }
     );
 
-    console.log(`✅ Restocked ${result.modifiedCount} products`);
+    console.log(` Restocked ${result.modifiedCount} products`);
 
     res.json({
       success: true,
@@ -253,7 +253,7 @@ const restockLowItems = async (req, res) => {
       message: `Successfully restocked ${result.modifiedCount} low stock items to ${restockValue} units each`,
     });
   } catch (error) {
-    console.error("❌ Error restocking items:", error);
+    console.error(" Error restocking items:", error);
     res.status(500).json({
       success: false,
       message: "Failed to restock items",

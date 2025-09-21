@@ -6,7 +6,7 @@ const { sendNewProductNotification } = require('./emailService');
 // Send new product notifications to all newsletter subscribers
 exports.notifyNewProduct = async (productData) => {
   try {
-    console.log(`📢 Starting new product notification for: ${productData.name}`);
+    console.log(` Starting new product notification for: ${productData.name}`);
     
     // Get all users who are subscribed to newsletter and are active
     const users = await User.find({
@@ -32,11 +32,11 @@ exports.notifyNewProduct = async (productData) => {
     ];
 
     if (allSubscribers.length === 0) {
-      console.log('📭 No newsletter subscribers found');
+      console.log(' No newsletter subscribers found');
       return { success: true, sent: 0, failed: 0 };
     }
 
-    console.log(`📧 Found ${allSubscribers.length} newsletter subscribers`);
+    console.log(` Found ${allSubscribers.length} newsletter subscribers`);
 
     const results = {
       sent: 0,
@@ -58,14 +58,14 @@ exports.notifyNewProduct = async (productData) => {
             subscriber.name
           );
           
-          console.log(`✅ Notification sent to ${subscriber.email}`);
+          console.log(` Notification sent to ${subscriber.email}`);
           results.sent++;
           results.details.push({
             email: subscriber.email,
             status: 'success'
           });
         } catch (error) {
-          console.error(`❌ Failed to send to ${subscriber.email}:`, error.message);
+          console.error(` Failed to send to ${subscriber.email}:`, error.message);
           results.failed++;
           results.details.push({
             email: subscriber.email,
@@ -80,15 +80,12 @@ exports.notifyNewProduct = async (productData) => {
       
       // Add delay between batches to respect Brevo rate limits
       if (i + batchSize < allSubscribers.length) {
-        console.log(`⏳ Waiting 2 seconds before next batch...`);
+        console.log(` Waiting 2 seconds before next batch...`);
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
-    console.log(`📊 New product notification complete:`);
-    console.log(`   ✅ Sent: ${results.sent}`);
-    console.log(`   ❌ Failed: ${results.failed}`);
-    console.log(`   📧 Product: ${productData.name}`);
+    console.log(` New product notification complete:`);
 
     return {
       success: true,
@@ -99,7 +96,7 @@ exports.notifyNewProduct = async (productData) => {
     };
 
   } catch (error) {
-    console.error('❌ Error in notifyNewProduct:', error);
+    console.error('Error in notifyNewProduct:', error);
     throw error;
   }
 };
@@ -107,15 +104,13 @@ exports.notifyNewProduct = async (productData) => {
 // Test function to send notification to admin only
 exports.testNewProductNotification = async (productData, adminEmail) => {
   try {
-    console.log(`🧪 Testing new product notification for: ${productData.name}`);
     
     await sendNewProductNotification(adminEmail, productData, 'Admin User');
     
-    console.log(`✅ Test notification sent to ${adminEmail}`);
     return { success: true, sent: 1, failed: 0 };
     
   } catch (error) {
-    console.error('❌ Test notification failed:', error);
+
     throw error;
   }
 };

@@ -221,8 +221,6 @@ const getProductById = async (req, res) => {
 // Create new product (Admin only)
 const createProduct = async (req, res) => {
   try {
-    console.log('Create product request received:', req.body);
-    console.log('User role:', req.user?.role);
     
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -305,17 +303,17 @@ const createProduct = async (req, res) => {
             });
             emailsSent++;
           } catch (emailError) {
-            console.error(`❌ Failed to send email to ${subscriber.email}:`, emailError);
+            console.error(` Failed to send email to ${subscriber.email}:`, emailError);
             emailsFailed++;
           }
         }
         
-        console.log(`📧 New product notifications: ${emailsSent} sent, ${emailsFailed} failed`);
+        console.log(` New product notifications: ${emailsSent} sent, ${emailsFailed} failed`);
       } catch (error) {
-        console.error('❌ New product notification error:', error);
+        console.error(' New product notification error:', error);
       }
     } else {
-      console.log('⚠️ Product is inactive - no notifications sent');
+      console.log(' Product is inactive - no notifications sent');
     }
 
     

@@ -330,8 +330,7 @@ const forgotPassword = async (req, res) => {
 
     // 4️⃣ Send email with complete URL (not just token)
     await emailService.sendPasswordResetEmail(user.email, resetURL);
-    console.log(`✅ Password reset email sent to ${user.email}`);
-    console.log(`📧 Reset URL: ${resetURL}`); // Debug log
+    console.log(`Password reset email sent to ${user.email}`);
 
     return res.json({
       success: true,
@@ -396,42 +395,6 @@ const resetPassword = async (req, res) => {
     });
   }
 };
-
-// // Newsletter subscription
-// const subscribeNewsletter = async (req, res) => {
-//   try {
-//     const { email, name } = req.body; // <-- ENSURE NAME IS AVAILABLE
-
-//     // Check if the email is already registered as a user
-//     const existingUser = await User.findOne({ email });
-//     if (existingUser) {
-//       // ... same logic ...
-//       return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
-//     }
-
-//     // Check if the email is already registered as a guest
-//     const existingGuest = await Guest.findOne({ email });
-//    if (existingGuest) {
-//       // ... same logic ...
-//       return res.json({ success: true, message: 'Successfully subscribed to newsletter.' });
-//     }
-
-//     // If not found, create a new guest entry
-//     await Guest.create({ email, name });
-
-//     res.json({
-//       success: true,
-//       message: 'Successfully subscribed to newsletter'
-//     });
-//   } catch (error) {
-//     console.error('Newsletter subscription error:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to subscribe to newsletter',
-//       error: error.message
-//     });
-//   }
-// };
 
 module.exports = {
   register,

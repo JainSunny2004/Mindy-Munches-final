@@ -1,6 +1,17 @@
 import { Routes, Route } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import useAuthStore from "./store/authStore";
+
+// Console override for production - ADD THIS AT THE TOP
+if (process.env.NODE_ENV === 'production') {
+  console.log = () => {};
+  console.debug = () => {};
+  console.info = () => {};
+  console.warn = () => {};
+}
+
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
@@ -15,12 +26,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminInvite from "./pages/AdminInvite";
 import ProtectedRoute from "./components/ProtectedRoute";
 import BottomBar from "./components/BottomBar";
-
 import PaymentTest from "./components/PaymentTest";
-
-// Add this import at the top
-import { useEffect } from "react";
-import useAuthStore from "./store/authStore";
 
 //Static Pages
 import Sattu from "./pages/Sattu";

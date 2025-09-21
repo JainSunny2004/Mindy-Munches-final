@@ -33,7 +33,6 @@ exports.createRazorpayOrder = async (req, res) => {
       },
     };
 
-    console.log("Creating Razorpay order:", options);
     const razorpayOrder = await razorpay.orders.create(options);
 
     res.json({
@@ -62,11 +61,6 @@ exports.verifyPayment = async (req, res) => {
       razorpay_signature,
       orderDetails,
     } = req.body;
-
-    console.log("Verifying payment:", {
-      razorpay_order_id,
-      razorpay_payment_id,
-    });
 
     // Verify signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
@@ -150,9 +144,9 @@ exports.verifyPayment = async (req, res) => {
           totalAmount: orderDetails.totalAmount,
           shippingAddress: savedOrder.shippingAddress,
         });
-        console.log("✅ Order confirmation email sent via Brevo");
+        console.log('Order confirmation email sent via SendPulse');
       } catch (emailError) {
-        console.error("❌ Brevo email failed:", emailError);
+        console.error(' Brevo email failed:', emailError);
       }
     }
 
