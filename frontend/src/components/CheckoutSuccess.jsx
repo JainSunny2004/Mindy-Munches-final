@@ -1,45 +1,50 @@
-import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { formatPrice } from '../utils/priceUtils';
 
 const CheckoutSuccess = ({ orderId, orderData, total }) => {
-  const navigate = useNavigate()
-  const [countdown, setCountdown] = useState(10)
+  // Debug the received props
+  // console.log('🔍 CheckoutSuccess Debug:', { 
+  //   orderId, 
+  //   total, 
+  //   totalType: typeof total,
+  //   orderData: orderData 
+  // });
 
-  const formatPrice = (price) => {
-    return `₹ ${(price / 100).toLocaleString('en-IN')}`
-  }
+  const navigate = useNavigate();
+  const [countdown, setCountdown] = useState(10);
 
   // Auto redirect to home after 10 seconds
   useEffect(() => {
     const timer = setInterval(() => {
-      setCountdown((prev) => {
+      setCountdown(prev => {
         if (prev <= 1) {
-          navigate('/')
-          return 0
+          navigate('/');
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [navigate])
+    return () => clearInterval(timer);
+  }, [navigate]);
 
   const handleReturnHome = () => {
-    navigate('/')
-  }
+    navigate('/');
+  };
 
   const handleViewOrders = () => {
-    navigate('/dashboard')
-  }
+    navigate('/dashboard');
+  };
 
   return (
-    <div className="min-h-screen bg-neutral-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-neutral-50 py-8 px-4">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8 text-center"
+        className="max-w-2xl w-full bg-white rounded-2xl shadow-lg p-8 text-center mx-auto"
       >
         {/* Success Icon */}
         <motion.div
@@ -59,12 +64,8 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          <h1 className="text-3xl font-bold text-neutral-800 mb-2">
-            Thank You for Your Order!
-          </h1>
-          <p className="text-lg text-neutral-600 mb-6">
-            Your order has been placed successfully and is being processed.
-          </p>
+          <h1 className="text-3xl font-bold text-neutral-800 mb-2">Thank You for Your Order!</h1>
+          <p className="text-lg text-neutral-600 mb-6">Your order has been placed successfully and is being processed.</p>
         </motion.div>
 
         {/* Order Details */}
@@ -81,14 +82,16 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
             </div>
             <div>
               <p className="text-sm text-neutral-600">Total Amount</p>
-              <p className="font-semibold text-primary-600 text-lg">{formatPrice(total)}</p>
+              <p className="font-semibold text-primary-600 text-lg">
+                {formatPrice(total)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-neutral-600">Delivery Address</p>
               <p className="font-medium text-neutral-800">
-                {orderData.address.street}, {orderData.address.city}
+                {orderData.address?.street}, {orderData.address?.city}
                 <br />
-                {orderData.address.state} - {orderData.address.pincode}
+                {orderData.address?.state} - {orderData.address?.pincode}
               </p>
             </div>
             <div>
@@ -135,7 +138,7 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1, duration: 0.5 }}
-          className="flex flex-col sm:flex-row gap-4 justify-center"
+          className="flex flex-col sm:flex-row gap-4 justify-center mb-6"
         >
           <button
             onClick={handleReturnHome}
@@ -156,7 +159,7 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.2, duration: 0.5 }}
-          className="mt-6 text-sm text-neutral-500"
+          className="text-sm text-neutral-500 mb-6"
         >
           Redirecting to home page in {countdown} seconds...
         </motion.div>
@@ -166,28 +169,21 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.4, duration: 0.5 }}
-          className="mt-8 pt-6 border-t border-neutral-200"
+          className="pt-6 border-t border-neutral-200"
         >
-          <p className="text-sm text-neutral-600 mb-3">
-            Need help with your order?
-          </p>
+          <p className="text-sm text-neutral-600 mb-3">Need help with your order?</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center text-sm">
-            <Link 
-              to="/contact" 
-              className="text-primary-600 hover:text-primary-700 font-medium"
-            >
-              Contact Support
-            </Link>
+            <span className="text-neutral-600">Contact Support</span>
             <span className="hidden sm:inline text-neutral-400">•</span>
-            <a 
-              href="mailto:support@mindymunchs.com" 
+            <a
+              href="mailto:support@mindymunchs.com"
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
               Email: support@mindymunchs.com
             </a>
             <span className="hidden sm:inline text-neutral-400">•</span>
-            <a 
-              href="tel:+919876543210" 
+            <a
+              href="tel:+919876543210"
               className="text-primary-600 hover:text-primary-700 font-medium"
             >
               Call: +91 98765 43210
@@ -196,7 +192,7 @@ const CheckoutSuccess = ({ orderId, orderData, total }) => {
         </motion.div>
       </motion.div>
     </div>
-  )
-}
+  );
+};
 
-export default CheckoutSuccess
+export default CheckoutSuccess;

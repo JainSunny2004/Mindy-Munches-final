@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatPrice } from "../../utils/priceUtils";
 
 const ProductManagement = () => {
   const [products, setProducts] = useState([]);
@@ -29,6 +30,7 @@ const ProductManagement = () => {
       sugar: "",
     },
     tags: [],
+    tagsInput: "",
     isActive: true,
     isFeatured: false,
     isOrganic: false,
@@ -38,8 +40,8 @@ const ProductManagement = () => {
 
   // Category options matching the model enum
   const categoryOptions = [
-    { value: "Makhana", label: "Makhana" },
-    { value: "Sattu", label: "Sattu" },
+    { value: "makhana", label: "Makhana" },
+    { value: "sattu", label: "Sattu" },
   ];
 
   const weightUnits = ["g", "kg", "ml", "l"];
@@ -87,10 +89,6 @@ const ProductManagement = () => {
     }
   };
 
-  const formatPrice = (price) => {
-    return `₹${price.toLocaleString("en-IN")}`;
-  };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
@@ -135,12 +133,22 @@ const ProductManagement = () => {
     }));
   };
 
+  // FIXED VERSION - Allows comma input and properly processes tags
   const handleTagsChange = (e) => {
-    const tags = e.target.value
+    const inputValue = e.target.value;
+
+    // Split by comma, trim each tag, and filter out empty strings
+    const tags = inputValue
       .split(",")
       .map((tag) => tag.trim())
-      .filter((tag) => tag);
-    setFormData((prev) => ({ ...prev, tags }));
+      .filter((tag) => tag.length > 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      tags,
+      // Store the raw input value for display purposes
+      tagsInput: inputValue,
+    }));
   };
 
   const generateSKU = () => {
@@ -249,7 +257,7 @@ const ProductManagement = () => {
       shortDescription: product.shortDescription || "",
       price: product.price?.toString() || "",
       originalPrice: product.originalPrice?.toString() || "",
-      category: product.category || "superfoods",
+      category: product.category || "makhana",
       images:
         product.images && product.images.length > 0
           ? product.images
@@ -269,6 +277,7 @@ const ProductManagement = () => {
         sugar: product.nutritionalInfo?.sugar?.toString() || "",
       },
       tags: product.tags || [],
+      tagsInput: product.tags ? product.tags.join(", ") : "", // Add this line
       isActive: product.isActive !== undefined ? product.isActive : true,
       isFeatured: product.isFeatured || product.featured || false,
       isOrganic: product.isOrganic || false,
@@ -318,7 +327,7 @@ const ProductManagement = () => {
       shortDescription: "",
       price: "",
       originalPrice: "",
-      category: "superfoods",
+      category: "makhana",
       images: [{ url: "", alt: "", isPrimary: true }],
       stock: "",
       sku: "",
@@ -332,6 +341,7 @@ const ProductManagement = () => {
         sugar: "",
       },
       tags: [],
+      tagsInput: "",
       isActive: true,
       isFeatured: false,
       isOrganic: false,
@@ -447,7 +457,9 @@ const ProductManagement = () => {
                     <div className="flex-shrink-0">
                       <img
                         className="h-16 w-16 rounded-lg object-cover"
-                        src={product.images?.[0]?.url || "/placeholder-image.jpg"}
+                        src={
+                          product.images?.[0]?.url || "/placeholder-image.jpg"
+                        }
                         alt={product.name}
                       />
                     </div>
@@ -506,7 +518,7 @@ const ProductManagement = () => {
                           </span>
                         </div>
                       </div>
-                      
+
                       <div className="mt-3 flex items-center justify-between text-xs text-gray-500">
                         <span>SKU: {product.sku}</span>
                         <span>Stock: {product.stock}</span>
@@ -577,7 +589,8 @@ const ProductManagement = () => {
                           <img
                             className="h-10 w-10 rounded-lg object-cover"
                             src={
-                              product.images?.[0]?.url || "/placeholder-image.jpg"
+                              product.images?.[0]?.url ||
+                              "/placeholder-image.jpg"
                             }
                             alt={product.name}
                           />
@@ -715,7 +728,9 @@ const ProductManagement = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                   {/* Product Images */}
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Images</h3>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4">
+                      Images
+                    </h3>
                     <div className="space-y-4">
                       {selectedProduct.images?.map((image, index) => (
                         <div key={index} className="relative">
@@ -741,7 +756,8 @@ const ProductManagement = () => {
                         <h3 className="text-xl md:text-2xl font-bold text-gray-900">
                           {selectedProduct.name}
                         </h3>
-                        {(selectedProduct.isFeatured || selectedProduct.featured) && (
+                        {(selectedProduct.isFeatured ||
+                          selectedProduct.featured) && (
                           <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                             ⭐ Featured
                           </span>
@@ -757,13 +773,14 @@ const ProductManagement = () => {
                           </span>
                         )}
                       </div>
-                      
+
                       <div className="flex items-center gap-4 mb-4">
                         <span className="text-2xl font-bold text-gray-900">
                           {formatPrice(selectedProduct.price)}
                         </span>
                         {selectedProduct.originalPrice &&
-                          selectedProduct.originalPrice > selectedProduct.price && (
+                          selectedProduct.originalPrice >
+                            selectedProduct.price && (
                             <span className="text-lg text-gray-500 line-through">
                               {formatPrice(selectedProduct.originalPrice)}
                             </span>
@@ -788,7 +805,7 @@ const ProductManagement = () => {
                       <p className="text-gray-600 mb-4">
                         {selectedProduct.shortDescription}
                       </p>
-                      
+
                       {selectedProduct.description && (
                         <p className="text-gray-700 mb-4">
                           {selectedProduct.description}
@@ -803,22 +820,35 @@ const ProductManagement = () => {
                         <p className="text-gray-600">{selectedProduct.sku}</p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-900">Category:</span>
-                        <p className="text-gray-600">{selectedProduct.category}</p>
+                        <span className="font-medium text-gray-900">
+                          Category:
+                        </span>
+                        <p className="text-gray-600">
+                          {selectedProduct.category}
+                        </p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-900">Stock:</span>
+                        <span className="font-medium text-gray-900">
+                          Stock:
+                        </span>
                         <p className="text-gray-600">{selectedProduct.stock}</p>
                       </div>
                       <div>
-                        <span className="font-medium text-gray-900">Origin:</span>
-                        <p className="text-gray-600">{selectedProduct.origin || "India"}</p>
+                        <span className="font-medium text-gray-900">
+                          Origin:
+                        </span>
+                        <p className="text-gray-600">
+                          {selectedProduct.origin || "India"}
+                        </p>
                       </div>
                       {selectedProduct.weight?.value && (
                         <div>
-                          <span className="font-medium text-gray-900">Weight:</span>
+                          <span className="font-medium text-gray-900">
+                            Weight:
+                          </span>
                           <p className="text-gray-600">
-                            {selectedProduct.weight.value} {selectedProduct.weight.unit}
+                            {selectedProduct.weight.value}{" "}
+                            {selectedProduct.weight.unit}
                           </p>
                         </div>
                       )}
@@ -827,7 +857,9 @@ const ProductManagement = () => {
                     {/* Tags */}
                     {selectedProduct.tags?.length > 0 && (
                       <div>
-                        <span className="font-medium text-gray-900 block mb-2">Tags:</span>
+                        <span className="font-medium text-gray-900 block mb-2">
+                          Tags:
+                        </span>
                         <div className="flex flex-wrap gap-2">
                           {selectedProduct.tags.map((tag, index) => (
                             <span
@@ -842,23 +874,27 @@ const ProductManagement = () => {
                     )}
 
                     {/* Nutritional Information */}
-                    {selectedProduct.nutritionalInfo && Object.keys(selectedProduct.nutritionalInfo).length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-gray-900 mb-3">
-                          Nutritional Information (per 100g)
-                        </h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
-                          {Object.entries(selectedProduct.nutritionalInfo).map(([key, value]) => (
-                            <div key={key} className="bg-gray-50 p-2 rounded">
-                              <span className="font-medium text-gray-900 capitalize block">
-                                {key}:
-                              </span>
-                              <span className="text-gray-600">{value}g</span>
-                            </div>
-                          ))}
+                    {selectedProduct.nutritionalInfo &&
+                      Object.keys(selectedProduct.nutritionalInfo).length >
+                        0 && (
+                        <div>
+                          <h4 className="font-medium text-gray-900 mb-3">
+                            Nutritional Information (per 100g)
+                          </h4>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                            {Object.entries(
+                              selectedProduct.nutritionalInfo
+                            ).map(([key, value]) => (
+                              <div key={key} className="bg-gray-50 p-2 rounded">
+                                <span className="font-medium text-gray-900 capitalize block">
+                                  {key}:
+                                </span>
+                                <span className="text-gray-600">{value}g</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
                   </div>
                 </div>
 
@@ -875,7 +911,11 @@ const ProductManagement = () => {
                   </button>
                   <button
                     onClick={() => {
-                      if (window.confirm("Are you sure you want to delete this product?")) {
+                      if (
+                        window.confirm(
+                          "Are you sure you want to delete this product?"
+                        )
+                      ) {
                         handleDelete(selectedProduct._id);
                         closeDetailModal();
                       }
@@ -955,7 +995,7 @@ const ProductManagement = () => {
                         className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent appearance-none bg-white"
                       >
                         {categoryOptions.map((option) => (
-                          <option key={option.value} value={option.value}>
+                          <option key={option.label} value={option.value}>
                             {option.label}
                           </option>
                         ))}
@@ -1123,7 +1163,10 @@ const ProductManagement = () => {
                     Product Images
                   </label>
                   {formData.images.map((image, index) => (
-                    <div key={index} className="mb-3 p-3 border border-gray-200 rounded-lg">
+                    <div
+                      key={index}
+                      className="mb-3 p-3 border border-gray-200 rounded-lg"
+                    >
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="md:col-span-2">
                           <input
@@ -1154,7 +1197,11 @@ const ProductManagement = () => {
                             type="checkbox"
                             checked={image.isPrimary}
                             onChange={(e) =>
-                              handleImageChange(index, "isPrimary", e.target.checked)
+                              handleImageChange(
+                                index,
+                                "isPrimary",
+                                e.target.checked
+                              )
                             }
                             className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                           />
@@ -1216,11 +1263,24 @@ const ProductManagement = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.tags.join(", ")}
+                    value={formData.tagsInput || formData.tags.join(", ")}
                     onChange={handleTagsChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    placeholder="organic, healthy, gluten-free"
+                    placeholder="organic, healthy, gluten-free, vegan"
                   />
+                  {/* Show processed tags preview */}
+                  {formData.tags.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <span
+                          key={index}
+                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Product Flags */}
@@ -1248,7 +1308,9 @@ const ProductManagement = () => {
                         onChange={handleInputChange}
                         className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Featured</span>
+                      <span className="ml-2 text-sm text-gray-700">
+                        Featured
+                      </span>
                     </label>
 
                     <label className="flex items-center">
@@ -1259,7 +1321,9 @@ const ProductManagement = () => {
                         onChange={handleInputChange}
                         className="rounded border-gray-300 text-orange-600 focus:ring-orange-500"
                       />
-                      <span className="ml-2 text-sm text-gray-700">Organic</span>
+                      <span className="ml-2 text-sm text-gray-700">
+                        Organic
+                      </span>
                     </label>
 
                     <label className="flex items-center">

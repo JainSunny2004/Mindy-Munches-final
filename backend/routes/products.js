@@ -30,7 +30,7 @@ const productValidation = [
     .isFloat({ min: 0 })
     .withMessage('Original price must be a positive number'),
   body('category')
-    .isIn(['superfoods', 'grains', 'spices', 'oils', 'snacks', 'beverages'])
+    .isIn(['makhana', 'sattu'])
     .withMessage('Invalid category'),
   body('subcategory')
     .optional()
@@ -97,7 +97,7 @@ const reviewValidation = [
 
 const searchValidation = [
   query('q').optional().trim().isLength({ min: 1, max: 100 }),
-  query('category').optional().isIn(['superfoods', 'grains', 'spices', 'oils', 'snacks', 'beverages']),
+  query('category').optional().isIn(['makhana','sattu']),
   query('minPrice').optional().isFloat({ min: 0 }),
   query('maxPrice').optional().isFloat({ min: 0 })
 ];

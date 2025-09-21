@@ -28,7 +28,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: [true, 'Product category is required'],
-    enum: ['superfoods', 'grains', 'spices', 'oils', 'snacks', 'beverages'],
+    enum: ['makhana', 'sattu'],
     lowercase: true
   },
   subcategory: {

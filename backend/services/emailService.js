@@ -1,8 +1,8 @@
 // Production-ready email service using Brevo API only
 const SibApiV3Sdk = require('@sendinblue/client');
 
-console.log('🔍 Checking Brevo email service configuration...');
-console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Present ✅' : 'Missing ❌');
+// console.log('🔍 Checking Brevo email service configuration...');
+// console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Present ✅' : 'Missing ❌');
 
 // Initialize Brevo API
 let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
@@ -140,6 +140,21 @@ exports.sendNewProductNotification = async (email, productData, name = 'Valued C
 // Order Confirmation Email
 exports.sendOrderConfirmation = async (email, orderData) => {
   const subject = `Order Confirmation #${orderData.orderId} - Mindy Munchs`;
+
+  // ✅ SAFE DATE FORMATTING
+  const orderDate = orderData.createdAt ? 
+    new Date(orderData.createdAt).toLocaleDateString('en-IN') : 
+    new Date().toLocaleDateString('en-IN');
+  
+  // ✅ SAFE ADDRESS FORMATTING
+  const address = orderData.shippingAddress || {};
+  const fullAddress = [
+    address.address,
+    address.city,
+    address.state,
+    address.pincode
+  ].filter(Boolean).join(', ') || 'Address not provided';
+  
   const htmlContent = `
     <!DOCTYPE html>
     <html>
@@ -161,19 +176,19 @@ exports.sendOrderConfirmation = async (email, orderData) => {
         </div>
         <div class="order-details">
           <h2>Order #${orderData.orderId}</h2>
-          <p><strong>Date:</strong> ${new Date(orderData.createdAt).toLocaleDateString('en-IN')}</p>
-          <p><strong>Delivery Address:</strong><br>${orderData.shippingAddress.address}<br>${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderData.shippingAddress.pincode}</p>
+          <p><strong>Date:</strong> ${orderDate}</p>
+          <p><strong>Delivery Address:</strong><br>${fullAddress}</p>
           
           <h3>Order Items:</h3>
-          ${orderData.items.map(item => `
+          ${(orderData.items || []).map(item => `
             <div class="item">
-              <strong>${item.name}</strong><br>
-              Quantity: ${item.quantity} × ₹${item.price.toLocaleString('en-IN')} = ₹${(item.quantity * item.price).toLocaleString('en-IN')}
+              <strong>${item.name || 'Unknown Item'}</strong><br>
+              Quantity: ${item.quantity || 1} × ₹${(item.price || 0).toLocaleString('en-IN')} = ₹${((item.quantity || 1) * (item.price || 0)).toLocaleString('en-IN')}
             </div>
           `).join('')}
           
           <div class="total">
-            <p>Total Amount: ₹${orderData.totalAmount.toLocaleString('en-IN')}</p>
+            <p>Total Amount: ₹${(orderData.totalAmount || 0).toLocaleString('en-IN')}</p>
           </div>
         </div>
         <div class="footer">
@@ -183,7 +198,7 @@ exports.sendOrderConfirmation = async (email, orderData) => {
       </div>
     </body>
     </html>
-  `;
+    `;
   
   return await sendEmail(email, subject, htmlContent);
 };

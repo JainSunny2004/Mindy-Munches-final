@@ -6,6 +6,7 @@ import useCartStore from "../store/cartStore";
 import useAuthStore from "../store/authStore";
 import Loader from "../components/Loader";
 import ProductCard from "../components/ProductCard";
+import { formatPrice } from "../utils/priceUtils";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -223,29 +224,36 @@ const ProductDetail = () => {
   };
 
   const handleAddToCart = async () => {
-    // Allow adding to cart for both authenticated and guest users
     setIsAddingToCart(true);
 
-    // Add multiple quantities
-    for (let i = 0; i < quantity; i++) {
-      addItem(product);
+    try {
+      // Add the product with the specified quantity (not multiple times)
+      addItem({
+        ...product,
+        quantity: quantity, // Pass the quantity to the cart store
+      });
+
+      // Show success notification
+      const notification = document.createElement("div");
+      notification.className =
+        "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm";
+      notification.textContent = `${product.name} ${
+        quantity > 1 ? `(${quantity})` : ""
+      } added to cart!`;
+      document.body.appendChild(notification);
+
+      setTimeout(() => {
+        if (document.body.contains(notification)) {
+          document.body.removeChild(notification);
+        }
+      }, 3000);
+    } catch (error) {
+      console.error("Add to cart failed:", error);
+    } finally {
+      setTimeout(() => {
+        setIsAddingToCart(false);
+      }, 500);
     }
-
-    // Show success notification
-    const notification = document.createElement("div");
-    notification.className =
-      "fixed top-20 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm";
-    notification.textContent = `${product.name} (${quantity}) added to cart!`;
-    document.body.appendChild(notification);
-    setTimeout(() => {
-      if (document.body.contains(notification)) {
-        document.body.removeChild(notification);
-      }
-    }, 3000);
-
-    setTimeout(() => {
-      setIsAddingToCart(false);
-    }, 500);
   };
 
   const isInCart = items.some((item) => item.id === product?.id);
@@ -277,19 +285,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-neutral-50">
-      {/* Debug info in development */}
-      {process.env.NODE_ENV === "development" && (
-        <div className="fixed bottom-4 left-4 bg-black text-white p-2 rounded text-xs z-50 max-w-xs">
-          <p>
-            <strong>Debug Info:</strong>
-          </p>
-          <p>Product ID: {product?.id}</p>
-          <p>Images found: {productImages.length}</p>
-          <p>Selected: {selectedImageIndex}</p>
-          <p>Current src: {productImages[selectedImageIndex]}</p>
-        </div>
-      )}
-
+      
       {/* Breadcrumb */}
       <section className="bg-white border-b border-neutral-100">
         <div className="container mx-auto px-4 py-4">
@@ -520,18 +516,20 @@ const ProductDetail = () => {
                   </h1>
                   <div className="text-right">
                     <span className="text-3xl font-bold text-primary-600">
-                      {product && product.price
+                      {product?.price
                         ? formatPrice(product.price)
                         : "Price not available"}
                     </span>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-lg text-neutral-500 line-through">
-                        {formatPrice(product.price * 1.2)}
-                      </span>
-                      <span className="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
-                        17% OFF
-                      </span>
-                    </div>
+                  </div>
+
+                  {/* Original Price with strikethrough - around line 605 */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-lg text-neutral-500 line-through">
+                      {formatPrice(product.price * 1.2)}
+                    </span>
+                    <span className="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded">
+                      17% OFF
+                    </span>
                   </div>
                 </div>
               </div>
@@ -558,37 +556,6 @@ const ProductDetail = () => {
                   ({product.stock} available)
                 </span>
               </div>
-
-              {/* Guest User Notice for Order Placement */}
-              {!isAuthenticated && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <span className="text-sm font-medium">
-                      You can add items to cart as a guest. Please{" "}
-                      <Link
-                        to="/auth"
-                        className="underline hover:text-blue-800"
-                      >
-                        login
-                      </Link>{" "}
-                      to place orders and track your purchases.
-                    </span>
-                  </div>
-                </div>
-              )}
 
               {/* Quick Features */}
               <div className="grid grid-cols-3 gap-4 p-4 bg-primary-50 rounded-lg">
@@ -714,6 +681,7 @@ const ProductDetail = () => {
                     }to Cart - ${formatPrice(product.price * quantity)}`
                   )}
                 </button>
+
                 <button className="py-3 px-4 border border-neutral-300 text-neutral-700 font-medium rounded-lg hover:bg-neutral-50 transition-colors">
                   <div className="flex items-center justify-center gap-2">
                     <svg
@@ -800,7 +768,7 @@ const ProductDetail = () => {
                   { id: "description", label: "Description" },
                   { id: "ingredients", label: "Ingredients" },
                   { id: "nutrition", label: "Nutrition" },
-                  { id: "reviews", label: "Reviews (24)" },
+                  { id: "reviews", label: "Reviews" },
                 ].map((tab) => (
                   <button
                     key={tab.id}
@@ -876,23 +844,50 @@ const ProductDetail = () => {
                     </div>
                   </div>
                 )}
-
                 {activeTab === "nutrition" && (
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold text-neutral-800">
                       Nutrition Facts
                     </h3>
-                    <div className="bg-neutral-50 rounded-lg p-4">
-                      <p className="text-neutral-700 mb-4">Per 100g serving:</p>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>Energy: 347 kcal</div>
-                        <div>Protein: 9.7g</div>
-                        <div>Carbohydrates: 76.9g</div>
-                        <div>Fat: 0.1g</div>
-                        <div>Fiber: 14.5g</div>
-                        <div>Calcium: 60mg</div>
+                    {product.nutritionalInfo ? (
+                      <div className="bg-neutral-50 rounded-lg p-4">
+                        <p className="text-neutral-700 mb-4">
+                          Per 100g serving:
+                        </p>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          {product.nutritionalInfo.calories && (
+                            <div>
+                              Energy: {product.nutritionalInfo.calories} kcal
+                            </div>
+                          )}
+                          {product.nutritionalInfo.protein && (
+                            <div>
+                              Protein: {product.nutritionalInfo.protein}g
+                            </div>
+                          )}
+                          {product.nutritionalInfo.carbs && (
+                            <div>
+                              Carbohydrates: {product.nutritionalInfo.carbs}g
+                            </div>
+                          )}
+                          {product.nutritionalInfo.fat && (
+                            <div>Fat: {product.nutritionalInfo.fat}g</div>
+                          )}
+                          {product.nutritionalInfo.fiber && (
+                            <div>Fiber: {product.nutritionalInfo.fiber}g</div>
+                          )}
+                          {product.nutritionalInfo.sugar && (
+                            <div>Sugar: {product.nutritionalInfo.sugar}g</div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="bg-neutral-50 rounded-lg p-4">
+                        <p className="text-neutral-600 text-center">
+                          Nutritional information not available for this product
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 

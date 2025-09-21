@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import useAuthStore from "../../store/authStore";
+import { formatPrice } from "../../utils/priceUtils";
 
 const OrderManagement = () => {
   const [orders, setOrders] = useState([]);
@@ -43,11 +44,6 @@ const OrderManagement = () => {
     return parts.join(", ") || "Incomplete address";
   };
 
-  // ✅ Format price helper
-  const formatPrice = (price) => {
-    if (!price) return "₹0";
-    return `₹${(price / 100).toLocaleString("en-IN")}`;
-  };
 
   // ✅ Fetch orders with filters
   const fetchAllOrders = async (status = "all", paymentStatus = "all") => {

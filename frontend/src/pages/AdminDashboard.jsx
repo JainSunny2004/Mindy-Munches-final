@@ -88,11 +88,10 @@ const AdminDashboard = () => {
           } lg:translate-x-0 lg:static lg:inset-0 transition-transform duration-300 ease-in-out`}
         >
           {/* Sidebar Header */}
-          <div className="flex items-center justify-between p-6 border-b border-neutral-200">
-            
+          <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-neutral-200">
             <button
               onClick={() => setSidebarOpen(false)}
-              className="g:hidden text-neutral-400 hover:text-neutral-600"
+              className="text-neutral-400 hover:text-neutral-600"
             >
               <svg
                 className="w-6 h-6"
@@ -185,50 +184,6 @@ const AdminDashboard = () => {
                     />
                   </svg>
                 </button>
-                <div>
-                  <h1 className="text-2xl font-heading font-bold text-neutral-800">
-                    {menuItems.find((item) => item.id === activeTab)?.label ||
-                      "Admin Dashboard"}
-                  </h1>
-                  <p className="text-sm text-neutral-600">
-                    Welcome back, {user?.name}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-4">
-                {/* Quick Actions */}
-                <div className="hidden md:flex items-center space-x-2">
-                  <Link
-                    to="/admin/products"
-                    className="btn-primary text-sm px-4 py-2"
-                  >
-                    + Add Product
-                  </Link>
-                </div>
-
-                {/* User Menu */}
-                <div className="flex items-center space-x-2">
-                  <Link
-                    to="/"
-                    className="text-neutral-600 hover:text-neutral-800 transition-colors"
-                    title="View Website"
-                  >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                      />
-                    </svg>
-                  </Link>
-                </div>
               </div>
             </div>
           </header>
