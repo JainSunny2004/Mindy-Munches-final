@@ -21,7 +21,7 @@ const orderRoutes = require("./routes/orders");
 const testimonialRoutes = require("./routes/testimonials");
 const adminRoutes = require("./routes/admin");
 const videoTestimonialRoutes = require("./routes/videoTestimonials");
-const newsletterRoutes = require("./routes/newsletter");
+const newsletterRoutes = require("./routes/newsLetter");
 const paymentRoutes = require("./routes/paymentRoutes");
 
 const app = express();
