@@ -65,8 +65,8 @@ mongoose
       useUnifiedTopology: true,
     }
   )
-  .then(() => console.log("✅ Connected to MongoDB"))
-  .catch((err) => console.error("❌ MongoDB connection error:", err));
+  .then(() => console.log(" Connected to MongoDB"))
+  .catch((err) => console.error(" MongoDB connection error:", err));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -118,7 +118,7 @@ app.post('/api/test/welcome-email', async (req, res) => {
       });
     }
 
-    console.log(`🧪 Testing welcome email to ${email}`);
+    console.log(` Testing welcome email to ${email}`);
     await sendWelcomeEmail(email, name || 'Test User');
     
     res.json({
@@ -128,7 +128,7 @@ app.post('/api/test/welcome-email', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Test welcome email error:', error);
+    console.error(' Test welcome email error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send welcome email',
@@ -181,7 +181,7 @@ app.post('/api/test/order-email', async (req, res) => {
       }
     };
 
-    console.log(`🧪 Testing order confirmation email to ${email}`);
+    console.log(`Testing order confirmation email to ${email}`);
     await sendOrderConfirmation(email, mockOrderDetails);
     
     res.json({
@@ -192,7 +192,7 @@ app.post('/api/test/order-email', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Test order email error:', error);
+    console.error(' Test order email error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send order confirmation email',
@@ -219,7 +219,7 @@ app.post('/api/test/reset-email', async (req, res) => {
     // Generate a mock reset token for testing
     const mockResetToken = 'test_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-    console.log(`🧪 Testing password reset email to ${email}`);
+    console.log(` Testing password reset email to ${email}`);
     await sendPasswordReset(email, mockResetToken);
     
     res.json({
@@ -230,7 +230,7 @@ app.post('/api/test/reset-email', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Test reset email error:', error);
+    console.error(' Test reset email error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send password reset email',
@@ -281,7 +281,7 @@ app.post('/api/test/newsletter-email', async (req, res) => {
       </div>
     `;
 
-    console.log(`🧪 Testing newsletter email to ${email}`);
+    console.log(`Testing newsletter email to ${email}`);
     await sendNewsletterEmail(email, subject, htmlContent);
     
     res.json({
@@ -291,7 +291,7 @@ app.post('/api/test/newsletter-email', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Test newsletter email error:', error);
+    console.error(' Test newsletter email error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send newsletter email',
@@ -342,7 +342,7 @@ app.post('/api/test/new-product-notification', async (req, res) => {
       ]
     };
 
-    console.log(`🧪 Testing new product notification to ${email}`);
+    console.log(` Testing new product notification to ${email}`);
     const result = await testNewProductNotification(mockProduct, email);
     
     res.json({
@@ -354,7 +354,7 @@ app.post('/api/test/new-product-notification', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('❌ Test new product notification error:', error);
+    console.error(' Test new product notification error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send new product notification',
@@ -373,7 +373,7 @@ app.use("*", (req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  
   res.status(err.status || 500).json({
     success: false,
     message: err.message || "Internal Server Error",
@@ -383,15 +383,15 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`📧 Email Service: ${process.env.BREVO_API_KEY ? 'Brevo API (Production Ready)' : '⚠️  No Brevo API key - add BREVO_API_KEY to .env'}`);
+  //console.log(`🚀 Server running on port ${PORT}`);
+  //console.log(`📍 Environment: ${process.env.NODE_ENV || "development"}`);
+  //console.log(`📧 Email Service: ${process.env.BREVO_API_KEY ? 'Brevo API (Production Ready)' : '⚠️  No Brevo API key - add BREVO_API_KEY to .env'}`);
 });
 
 
 // Global error handler - ADD THIS BEFORE app.listen()
 app.use((err, req, res, next) => {
-  console.error('❌ Global error:', err);
+  console.error(' Global error:', err);
   res.status(500).json({
     success: false,
     message: 'Internal server error',
