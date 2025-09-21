@@ -1,17 +1,14 @@
 // Production-ready email service using Brevo API only
 const SibApiV3Sdk = require('@sendinblue/client');
 
-console.log('🔍 Checking Brevo email service configuration...');
-console.log('BREVO_API_KEY:', process.env.BREVO_API_KEY ? 'Present ✅' : 'Missing ❌');
-
 // Initialize Brevo API
 let apiInstance = new SibApiV3Sdk.TransactionalEmailsApi();
 if (process.env.BREVO_API_KEY) {
   let apiKey = apiInstance.authentications['apiKey'];
   apiKey.apiKey = process.env.BREVO_API_KEY;
-  console.log('✅ Brevo API initialized successfully');
+  console.log(' Brevo API initialized successfully');
 } else {
-  console.error('❌ Brevo API key missing - add BREVO_API_KEY to .env');
+  console.error('Brevo API key missing - add BREVO_API_KEY to .env');
 }
 
 // Core email sending function
@@ -31,12 +28,12 @@ const sendEmail = async (to, subject, htmlContent, senderName = 'Mindy Munchs') 
     };
     sendSmtpEmail.to = [{ email: to }];
 
-    console.log(`📧 Sending email via Brevo API to ${to}`);
+    console.log(` Sending email via Brevo API to ${to}`);
     const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-    console.log(`✅ Email sent successfully via Brevo to ${to}`);
+    console.log(` Email sent successfully via Brevo to ${to}`);
     return result;
   } catch (error) {
-    console.error(`❌ Failed to send email via Brevo to ${to}:`, error.response?.body || error.message);
+    console.error(` Failed to send email via Brevo to ${to}:`, error.response?.body || error.message);
     throw error;
   }
 };
