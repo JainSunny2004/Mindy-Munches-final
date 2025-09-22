@@ -34,8 +34,8 @@ const Sattu = () => {
 
             <p className="text-base sm:text-lg text-neutral-700 leading-relaxed">
               At Mindy Munchs, we bring back the wisdom of traditional Indian
-              superfoods to modern kitchens. From Bihar, a super-ground to
-              preserve its complete and rustic flavour. Packed with protein,
+              superfoods to modern kitchens. From Bihar, stone ground to
+              preserve it s complete n rustic flavour. Packed with protein,
               fibre and other essential nutrients to help beat hunger, boost
               energy, gut health, and everyday wellness.
             </p>
@@ -137,7 +137,7 @@ const Sattu = () => {
             </span>
           </h2>
           <p className="text-base sm:text-lg text-neutral-800 mb-8 sm:mb-12">
-            High-Grade, Hand-Picked Sattu ✓
+            100% Roasted Bengal Gram
           </p>
 
           {/* Reduced width container */}
@@ -163,7 +163,7 @@ const Sattu = () => {
                         Classic Sattu
                       </h3>
                       <p className="text-xs sm:text-sm text-gray-200 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
-                        Pure & Traditional
+                        Vanilla sattu make it your way
                       </p>
                     </div>
                   </div>
@@ -195,7 +195,7 @@ const Sattu = () => {
                         Jaljira Sattu
                       </h3>
                       <p className="text-xs sm:text-sm text-gray-200 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
-                        
+                        Bold, tangy n spicy
                       </p>
                     </div>
                   </div>
@@ -227,7 +227,7 @@ const Sattu = () => {
                         Masala Sattu
                       </h3>
                       <p className="text-xs sm:text-sm text-gray-200 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 delay-100">
-                        Spiced & Flavorful
+                        Spicy but balanced 
                       </p>
                     </div>
                   </div>
@@ -263,7 +263,7 @@ const Sattu = () => {
                   <h3 className="font-heading text-base sm:text-lg font-bold text-accent-600 group-hover:text-orange-400 transition mb-1">
                     Muscle Support -{" "}
                     <span className="text-neutral-500 text-xs sm:text-sm ml-2 sm:ml-3 font-normal">
-                      Keeps you full, reduces cravings
+                      High protein strengthens the muscle 
                     </span>
                   </h3>
                 </div>
@@ -281,7 +281,7 @@ const Sattu = () => {
                   <h3 className="font-heading text-base sm:text-lg font-bold text-accent-600 group-hover:text-orange-400 transition mb-1">
                     Women's Wellness -{" "}
                     <span className="text-neutral-500 text-xs sm:text-sm ml-2 sm:ml-3 font-normal">
-                      Supports hormonal balance and bone strength
+                      Supports harmonal balance , adds fibre and maintains iron
                     </span>
                   </h3>
                 </div>

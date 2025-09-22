@@ -322,7 +322,6 @@ const Home = () => {
     loadData();
   }, []);
 
-
   return (
     <div className="min-h-screen overflow-x-hidden max-w-full">
       {/* HERO BANNER SECTION - Mobile-optimized animations */}
@@ -538,7 +537,7 @@ const Home = () => {
               <h1 className="text-lg sm:text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-neutral-800 leading-tight whitespace-nowrap mb-10">
                 Revive{" "}
                 <span className="text-primary-500">Wholesome Snacks</span> for
-                Modern Living
+                Modern Convenience
               </h1>
             </motion.div>
           </div>
@@ -548,30 +547,31 @@ const Home = () => {
             {/* LEFT column */}
             <div className="h-full">
               <p className="text-base md:text-lg lg:text-xl text-neutral-600 mb-6 leading-relaxed max-w-3xl">
-                Snacking shouldn’t come with guilt. That’s why at Mindy Munchs,
-                we craft bites that are as quick to reach for as your go-to
-                packet — only smarter, tastier, and way better for you
+                Health should feel personal , playful and rooted in our everyday
+                lives
               </p>
 
               {/* Certifications: single line, no wrap, no x-scroll */}
               <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-2 sm:gap-3 md:gap-3 mb-8 px-2 sm:px-0 overflow-x-visible sm:overflow-x-clip">
-                {["Honest", "Clean", "Delicious"].map((cert, index) => (
-                  <motion.div
-                    key={cert}
-                    className="bg-white/80 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg shadow-sm flex items-center gap-1 sm:gap-2 flex-none whitespace-nowrap"
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                  >
-                    <span className="text-green-500 text-base sm:text-lg leading-none">
-                      ✓
-                    </span>
-                    <span className="text-xs sm:text-sm md:text-base font-medium text-neutral-700 leading-none">
-                      {cert}
-                    </span>
-                  </motion.div>
-                ))}
+                {["Snack Boldly", "Snack Mindfully", "Snack your way"].map(
+                  (cert, index) => (
+                    <motion.div
+                      key={cert}
+                      className="bg-white/80 backdrop-blur-sm px-3 py-2 sm:px-4 sm:py-2 md:px-5 md:py-2.5 rounded-lg shadow-sm flex items-center gap-1 sm:gap-2 flex-none whitespace-nowrap"
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                    >
+                      <span className="text-green-500 text-base sm:text-lg leading-none">
+                        ✓
+                      </span>
+                      <span className="text-xs sm:text-sm md:text-base font-medium text-neutral-700 leading-none">
+                        {cert}
+                      </span>
+                    </motion.div>
+                  )
+                )}
               </div>
 
               {/* Feature cards */}
@@ -811,7 +811,7 @@ const Home = () => {
             viewport={{ once: true }}
           >
             <Link to="/products" className="btn-primary">
-              View All Bestsellers
+              View All Products
             </Link>
           </motion.div>
         </div>

@@ -17,19 +17,19 @@ const AboutUs = () => {
             </h1>
 
             <p className="text-base sm:text-lg lg:text-xl text-neutral-700 leading-relaxed max-w-2xl mx-auto">
-              At Mindy Munchs, we are not just crafting snacks—we are responding 
-              to a quiet, growing concern that touches nearly every Indian household: 
-              the double burden of nutritional deficiency and lifestyle-related health issues.
+              At Mindy Munchs, we are not just crafting snacks—we are responding
+              to a quiet, growing concern that touches nearly every Indian
+              household: the double burden of nutritional deficiency and
+              lifestyle-related health issues.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-              <Link 
-                to="/products" 
+              <Link
+                to="/products"
                 className="btn-accent text-sm sm:text-base px-6 py-3 rounded-lg font-bold hover:scale-105 transform transition-all duration-300 shadow-lg"
               >
                 Explore Our Products
               </Link>
-              
             </div>
           </div>
         </div>
@@ -43,8 +43,9 @@ const AboutUs = () => {
               The Reality We're Addressing 📊
             </h2>
             <p className="text-base sm:text-lg text-neutral-700 max-w-3xl mx-auto leading-relaxed">
-              These aren't just statistics—they're reminders that what we eat daily 
-              shapes the health of our families, our communities, and our nation.
+              These aren't just statistics—they're reminders that what we eat
+              daily shapes the health of our families, our communities, and our
+              nation.
             </p>
           </div>
 
@@ -62,8 +63,8 @@ const AboutUs = () => {
                   Child Malnutrition Crisis
                 </h4>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  Indian children are not growing properly—being either underweight, 
-                  stunted, or overweight
+                  Indian children are not growing properly—being either
+                  underweight, stunted, or overweight
                 </p>
                 <div className="mt-3 text-xs text-gray-500">
                   Source: Care Health, Aug '24
@@ -84,7 +85,7 @@ const AboutUs = () => {
                   Protein Deficiency
                 </h4>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  Indians are protein-deficient, lacking essential nutrients for 
+                  Indians are protein-deficient, lacking essential nutrients for
                   muscle development and overall health
                 </p>
               </div>
@@ -124,8 +125,8 @@ const AboutUs = () => {
                   Magnesium Deficiency
                 </h4>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  Large portions of urban adults are deficient in magnesium—causing 
-                  fatigue, cramps, and poor sleep
+                  Large portions of urban adults are deficient in
+                  magnesium—causing fatigue, cramps, and poor sleep
                 </p>
               </div>
             </div>
@@ -143,7 +144,8 @@ const AboutUs = () => {
                   Rising Obesity
                 </h4>
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  Indians are overweight or obese today, costing 1.02% of GDP in 2019
+                  Indians are overweight or obese today, costing 1.02% of GDP in
+                  2019
                 </p>
                 <div className="mt-3 text-xs text-gray-500">
                   Source: HT, Mar '25
@@ -160,12 +162,10 @@ const AboutUs = () => {
                 <h3 className="font-heading text-base font-bold text-accent-800 mb-2">
                   Our Mission
                 </h3>
-                <h4 className="font-heading text-base font-bold text-accent-800 mb-2">
-                  Nutritional Solutions
-                </h4>
                 <p className="text-sm text-accent-700 leading-relaxed font-medium">
-                  We're addressing these challenges with traditional superfoods 
-                  crafted for modern lifestyles
+                  We are here to celebrate the power of choice , the richness of
+                  tradition and the joy of eating right -one mindful munch at a
+                  time .
                 </p>
               </div>
             </div>
@@ -182,7 +182,8 @@ const AboutUs = () => {
                 Our Philosophy 🌱
               </h2>
               <p className="text-base sm:text-lg text-neutral-800 max-w-2xl mx-auto leading-relaxed">
-                In a time when convenience often comes at the cost of health, we're choosing a different path.
+                In a time when convenience often comes at the cost of health,
+                we're choosing a different path.
               </p>
             </div>
 
@@ -197,8 +198,8 @@ const AboutUs = () => {
                   </h3>
                 </div>
                 <p className="text-sm text-neutral-700 leading-relaxed text-center">
-                  Bring back foods that heal, nourish, and belong to us—just served 
-                  in a way that fits modern lifestyles.
+                  Bring back foods that heal, nourish, and belong to us—just
+                  served in a way that fits modern lifestyles.
                 </p>
               </div>
 
@@ -226,8 +227,9 @@ const AboutUs = () => {
                   </h3>
                 </div>
                 <p className="text-sm text-neutral-700 leading-relaxed text-center">
-                  A healthier, stronger India doesn't begin with prescriptions—it begins 
-                  with what's on our plates, in our tiffins, and on our snack shelves.
+                  A healthier, stronger India doesn't begin with
+                  prescriptions—it begins with what's on our plates, in our
+                  tiffins, and on our snack shelves.
                 </p>
               </div>
             </div>
@@ -275,7 +277,8 @@ const AboutUs = () => {
                       Traditional Foods Deserve Revival
                     </h3>
                     <p className="text-sm text-neutral-600 leading-relaxed">
-                      Wholesome foods, once rooted in tradition, deserve a revival in modern homes.
+                      Wholesome foods, once rooted in tradition, deserve a
+                      revival in modern homes.
                     </p>
                   </div>
                 </div>
@@ -310,9 +313,10 @@ const AboutUs = () => {
                 Reviving Wholesome Foods for Modern Lifestyles 🚀
               </h2>
               <p className="text-base sm:text-lg text-neutral-700 max-w-4xl mx-auto leading-relaxed">
-                From heritage ingredients like Sattu to light, protein-rich Makhana, we are 
-                reintroducing the power of India's forgotten superfoods—crafted thoughtfully 
-                for today's busy, health-conscious world.
+                From heritage ingredients like Sattu to light, protein-rich
+                Makhana, we are reintroducing the power of India's forgotten
+                superfoods—crafted thoughtfully for today's busy,
+                health-conscious world.
               </p>
             </div>
 
@@ -329,8 +333,9 @@ const AboutUs = () => {
                     </h3>
                   </div>
                   <p className="text-sm text-neutral-700 leading-relaxed mb-3">
-                    Traditional superfood from Bihar, packed with protein and essential nutrients. 
-                    Perfect for energy drinks, parathas, and healthy snacking.
+                    Traditional superfood from Bihar, packed with protein and
+                    essential nutrients. Perfect for energy drinks, parathas,
+                    and healthy snacking.
                   </p>
                   <div className="flex items-center text-xs text-accent-500">
                     <span className="inline-block w-2 h-2 bg-accent-400 rounded-full mr-2"></span>
@@ -351,8 +356,9 @@ const AboutUs = () => {
                     </h3>
                   </div>
                   <p className="text-sm text-neutral-700 leading-relaxed mb-3">
-                    Light, protein-rich fox nuts that are perfect for healthy snacking. 
-                    Low in calories, high in nutrition, and incredibly versatile.
+                    Light, protein-rich fox nuts that are perfect for healthy
+                    snacking. Low in calories, high in nutrition, and incredibly
+                    versatile.
                   </p>
                   <div className="flex items-center text-xs text-accent-500">
                     <span className="inline-block w-2 h-2 bg-accent-400 rounded-full mr-2"></span>
@@ -365,14 +371,15 @@ const AboutUs = () => {
             <div className="text-center">
               <div className="bg-gradient-to-br from-accent-50 to-orange-50 rounded-xl p-6 sm:p-8 max-w-3xl mx-auto border-2 border-accent-200">
                 <p className="text-base sm:text-lg font-medium text-accent-800 mb-4 leading-relaxed">
-                  Because eating right shouldn't feel like a sacrifice—it should feel like coming home to better health.
+                  Because eating right shouldn't feel like a sacrifice—it should
+                  feel like coming home to better health.
                 </p>
                 <div className="space-y-1">
                   <p className="text-lg sm:text-xl font-bold text-accent-700">
                     👉 That's who we are. That's what we stand for.
                   </p>
                   <p className="text-xl sm:text-2xl font-bold text-accent-800">
-                    Mindy Munchs: Reviving Wholesome Foods for Modern Lifestyles.
+                    Reviving Wholesome Trafitional foods for Modern Convenience
                   </p>
                 </div>
               </div>

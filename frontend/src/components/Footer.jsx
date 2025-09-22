@@ -8,61 +8,62 @@ const Footer = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isTouchDevice, setIsTouchDevice] = useState(false);
 
-    
   // Newsletter subscription states
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [isSubscribing, setIsSubscribing] = useState(false);
-  const [subscriptionMessage, setSubscriptionMessage] = useState('');
-  const [subscriptionStatus, setSubscriptionStatus] = useState('');
+  const [subscriptionMessage, setSubscriptionMessage] = useState("");
+  const [subscriptionStatus, setSubscriptionStatus] = useState("");
 
   // Newsletter subscription handler
   const handleNewsletterSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
-      setSubscriptionMessage('Please enter a valid email address');
-      setSubscriptionStatus('error');
+      setSubscriptionMessage("Please enter a valid email address");
+      setSubscriptionStatus("error");
       return;
     }
 
     setIsSubscribing(true);
-    setSubscriptionMessage('');
+    setSubscriptionMessage("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/newsletter/subscribe`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          email: email.trim(),
-          source: 'footer'
-        }),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/newsletter/subscribe`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            source: "footer",
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (data.success) {
         setSubscriptionMessage(data.message);
-        setSubscriptionStatus('success');
-        setEmail('');
+        setSubscriptionStatus("success");
+        setEmail("");
       } else {
-        setSubscriptionMessage(data.message || 'Failed to subscribe');
-        setSubscriptionStatus('error');
+        setSubscriptionMessage(data.message || "Failed to subscribe");
+        setSubscriptionStatus("error");
       }
     } catch (error) {
-      console.error('Newsletter subscription error:', error);
-      setSubscriptionMessage('Network error. Please try again.');
-      setSubscriptionStatus('error');
+      console.error("Newsletter subscription error:", error);
+      setSubscriptionMessage("Network error. Please try again.");
+      setSubscriptionStatus("error");
     } finally {
       setIsSubscribing(false);
       setTimeout(() => {
-        setSubscriptionMessage('');
-        setSubscriptionStatus('');
+        setSubscriptionMessage("");
+        setSubscriptionStatus("");
       }, 5000);
     }
   };
-
 
   // More reliable touch device detection using media queries
   useEffect(() => {
@@ -70,24 +71,24 @@ const Footer = () => {
       const hasCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
       const noHover = window.matchMedia("(hover: none)").matches;
       const isSmallScreen = window.matchMedia("(max-width: 1023px)").matches;
-      
+
       setIsTouchDevice(hasCoarsePointer || noHover || isSmallScreen);
     };
 
     checkTouchDevice();
-    
+
     const coarsePointerQuery = window.matchMedia("(pointer: coarse)");
     const hoverQuery = window.matchMedia("(hover: none)");
     const screenSizeQuery = window.matchMedia("(max-width: 1023px)");
-    
-    coarsePointerQuery.addEventListener('change', checkTouchDevice);
-    hoverQuery.addEventListener('change', checkTouchDevice);
-    screenSizeQuery.addEventListener('change', checkTouchDevice);
-    
+
+    coarsePointerQuery.addEventListener("change", checkTouchDevice);
+    hoverQuery.addEventListener("change", checkTouchDevice);
+    screenSizeQuery.addEventListener("change", checkTouchDevice);
+
     return () => {
-      coarsePointerQuery.removeEventListener('change', checkTouchDevice);
-      hoverQuery.removeEventListener('change', checkTouchDevice);
-      screenSizeQuery.removeEventListener('change', checkTouchDevice);
+      coarsePointerQuery.removeEventListener("change", checkTouchDevice);
+      hoverQuery.removeEventListener("change", checkTouchDevice);
+      screenSizeQuery.removeEventListener("change", checkTouchDevice);
     };
   }, []);
 
@@ -240,7 +241,10 @@ const Footer = () => {
               movement towards traditional Indian superfoods
             </p>
 
-            <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row w-full max-w-sm sm:max-w-md lg:max-w-lg rounded-lg overflow-hidden shadow-lg">
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex flex-col sm:flex-row w-full max-w-sm sm:max-w-md lg:max-w-lg rounded-lg overflow-hidden shadow-lg"
+            >
               <input
                 type="email"
                 value={email}
@@ -276,20 +280,19 @@ const Footer = () => {
 
             {/* Subscription feedback message */}
             {subscriptionMessage && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className={`p-3 rounded-lg text-sm font-medium max-w-sm sm:max-w-md ${
-                  subscriptionStatus === 'success' 
-                    ? 'bg-green-100 text-green-800 border border-green-200' 
-                    : 'bg-red-100 text-red-800 border border-red-200'
+                  subscriptionStatus === "success"
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : "bg-red-100 text-red-800 border border-red-200"
                 }`}
               >
                 {subscriptionMessage}
               </motion.div>
             )}
           </div>
-
 
           {/* Right: Location + Available On */}
           <div className="text-center lg:text-right space-y-3 sm:space-y-4">
@@ -305,11 +308,12 @@ const Footer = () => {
             <div className="text-sm sm:text-base" style={{ color: "#1C1E19" }}>
               <span className="font-medium">Email ID: </span>
               <a
-                href="mailto:Mindymunchs@gmail.com"
+                href="mailto:connect @mindymunchs.com
+"
                 className="underline hover:text-primary-600 transition-colors duration-200 break-all"
                 style={{ color: "#1C1E19" }}
               >
-                Mindymunchs@gmail.com
+                connect @mindymunchs.com
               </a>
             </div>
 
@@ -334,7 +338,9 @@ const Footer = () => {
                       className="w-full h-full object-contain"
                       onError={(e) => {
                         // Fallback to placeholder if image fails to load
-                        e.target.src = `https://via.placeholder.com/32/6b7280/ffffff?text=${platform.name.charAt(0)}`;
+                        e.target.src = `https://via.placeholder.com/32/6b7280/ffffff?text=${platform.name.charAt(
+                          0
+                        )}`;
                       }}
                     />
                   </div>
@@ -369,9 +375,11 @@ const Footer = () => {
                   {section}
                   <svg
                     className={`w-3 h-3 sm:w-4 sm:h-4 transform transition-transform duration-200 ${
-                      isTouchDevice 
-                        ? (openDropdown === section ? 'rotate-180' : '') 
-                        : 'group-hover:rotate-180'
+                      isTouchDevice
+                        ? openDropdown === section
+                          ? "rotate-180"
+                          : ""
+                        : "group-hover:rotate-180"
                     }`}
                     fill="none"
                     stroke="currentColor"
@@ -387,11 +395,13 @@ const Footer = () => {
                 </button>
 
                 {/* Dropdown Menu - Position unchanged */}
-                <div 
+                <div
                   className={`absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-40 sm:w-48 bg-white rounded-lg shadow-xl border border-gray-200 transition-all duration-300 z-20 ${
-                    isTouchDevice 
-                      ? (openDropdown === section ? 'opacity-100 visible' : 'opacity-0 invisible')
-                      : 'opacity-0 invisible group-hover:opacity-100 group-hover:visible'
+                    isTouchDevice
+                      ? openDropdown === section
+                        ? "opacity-100 visible"
+                        : "opacity-0 invisible"
+                      : "opacity-0 invisible group-hover:opacity-100 group-hover:visible"
                   }`}
                 >
                   <div className="py-2">

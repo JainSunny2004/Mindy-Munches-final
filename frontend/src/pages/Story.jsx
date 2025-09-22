@@ -9,7 +9,9 @@ const timeline = [
     content: (
       <div className="space-y-3">
         <p className="text-neutral-600 leading-relaxed text-sm">
-          When my elder son started cricket, I carried fruits for his journey home. Sometimes he ate, sometimes not. Each time I saw him tired but munching chips, I felt helpless and guilty.
+          When my elder son started cricket, I carried fruits for his journey
+          home. Sometimes he ate, sometimes not. Each time I saw him tired but
+          munching chips, I felt helpless and guilty.
         </p>
         <div className="bg-orange-50 border-l-3 border-orange-400 p-3 rounded-r-lg">
           <p className="text-orange-800 italic font-medium text-sm">
@@ -17,31 +19,39 @@ const timeline = [
           </p>
         </div>
       </div>
-    )
+    ),
   },
   {
-    year: "2018–19", 
+    year: "2018–19",
     title: "The Chole Bhature Phase",
     position: 2,
     content: (
       <div className="space-y-3">
         <div className="flex flex-wrap gap-1 mb-3">
-          {['Chole Bhature', 'Bread Pakoras', 'Chocolates', 'Colas'].map(item => (
-            <span key={item} className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium">
-              {item}
-            </span>
-          ))}
+          {["Chole Bhature", "Bread Pakoras", "Chocolates", "Colas"].map(
+            (item) => (
+              <span
+                key={item}
+                className="bg-red-100 text-red-700 px-2 py-1 rounded-full text-xs font-medium"
+              >
+                {item}
+              </span>
+            )
+          )}
         </div>
         <p className="text-neutral-600 leading-relaxed text-sm">
-          At first, I was happy they ate. But I noticed sugar spikes, fatigue, the crash. I read more—and realized it wasn't just food. It shaped their health, habits, horizon.
+          At first, I was happy they ate. But I noticed sugar spikes, fatigue,
+          the crash. I read more—and realized it wasn't just food. It shaped
+          their health, habits, horizon.
         </p>
         <div className="bg-yellow-50 border border-yellow-200 p-3 rounded-lg">
           <p className="text-yellow-800 font-semibold text-sm">
-            This wasn't just food. It was shaping their health, habits, and horizon.
+            This wasn't just food. It was shaping their health, habits, and
+            horizon.
           </p>
         </div>
       </div>
-    )
+    ),
   },
   {
     year: "?",
@@ -49,9 +59,10 @@ const timeline = [
     position: 3,
     content: (
       <blockquote className="text-lg text-neutral-700 italic font-light leading-relaxed border-l-3 border-accent-400 pl-4">
-        "Why do healthy choices always feel so hard? Why can't they be just as easy, just as tasty, just as tempting?"
+        "Why do healthy choices always feel so hard? Why can't they be just as
+        easy, just as tasty, just as tempting?"
       </blockquote>
-    )
+    ),
   },
   {
     year: "Today",
@@ -63,7 +74,8 @@ const timeline = [
           "This feels good."
         </blockquote>
         <p className="text-neutral-600 leading-relaxed text-sm">
-          We all crave food that's quick, convenient, comforting… but what if it could also be clean, conscious, and caring?
+          We all crave food that's quick, convenient, comforting… but what if it
+          could also be clean, conscious, and caring?
         </p>
         <div className="bg-gradient-to-r from-accent-100 to-orange-100 border border-accent-200 p-3 rounded-lg">
           <p className="text-accent-700 font-bold text-sm">
@@ -71,7 +83,7 @@ const timeline = [
           </p>
         </div>
       </div>
-    )
+    ),
   },
   {
     year: "Experiment",
@@ -80,7 +92,8 @@ const timeline = [
     content: (
       <div className="space-y-3">
         <p className="text-neutral-600 leading-relaxed text-sm">
-          I gave my boys roasted makhana and sattu after practice. They loved it. They asked for it. Slowly, chips and sodas lost their charm.
+          I gave my boys roasted makhana and sattu after practice. They loved
+          it. They asked for it. Slowly, chips and sodas lost their charm.
         </p>
         <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
           <p className="text-green-800 font-semibold text-sm">
@@ -88,7 +101,7 @@ const timeline = [
           </p>
         </div>
       </div>
-    )
+    ),
   },
   {
     year: "Childhood",
@@ -102,16 +115,20 @@ const timeline = [
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-accent-50 border border-accent-200 rounded-lg p-3 text-center">
             <h4 className="font-bold text-accent-700 text-sm mb-1">Makhana</h4>
-            <p className="text-accent-600 text-xs">Light • Crunchy • Comforting</p>
+            <p className="text-accent-600 text-xs">
+              Light • Crunchy • Comforting
+            </p>
           </div>
           <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
             <h4 className="font-bold text-orange-700 text-sm mb-1">Sattu</h4>
-            <p className="text-orange-600 text-xs">Filling • Cooling • Nourishing</p>
+            <p className="text-orange-600 text-xs">
+              Filling • Hydrating• Nourishing
+            </p>
           </div>
         </div>
       </div>
-    )
-  }
+    ),
+  },
 ];
 
 const Story = () => {
@@ -152,22 +169,20 @@ const Story = () => {
                       </div>
                       <div className="flex-1 h-0.5 bg-gradient-to-r from-accent-400 to-orange-400 opacity-30"></div>
                     </div>
-                    
+
                     {/* Card Header */}
                     <h3 className="text-lg md:text-xl font-bold text-neutral-800 mb-4 leading-tight">
                       {item.title}
                     </h3>
-                    
+
                     {/* Card Content */}
-                    <div className="flex-1">
-                      {item.content}
-                    </div>
-                    
+                    <div className="flex-1">{item.content}</div>
+
                     {/* Card Footer with connecting element - Updated to use position number */}
                     <div className="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between">
                       <div className="w-8 h-1 bg-gradient-to-r from-accent-400 to-orange-400 rounded-full"></div>
                       <div className="text-xs text-neutral-400 font-medium">
-                        {String(item.position).padStart(2, '0')}
+                        {String(item.position).padStart(2, "0")}
                       </div>
                     </div>
                   </div>
@@ -181,14 +196,14 @@ const Story = () => {
                           <div className="absolute -right-1.5 -top-1.5 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
                         </div>
                       )}
-                      
+
                       {/* Card 2 → Card 3: Horizontal Right */}
                       {idx === 1 && (
                         <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gradient-to-r from-accent-500 to-orange-500 z-0">
                           <div className="absolute -right-1.5 -top-1.5 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
                         </div>
                       )}
-                      
+
                       {/* Card 3 → Card 4: Complex path (Down and Left) */}
                       {idx === 2 && (
                         <div className="hidden lg:block absolute z-0">
@@ -197,32 +212,62 @@ const Story = () => {
                             <div className="absolute -bottom-1.5 -left-1.25 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
                           </div>
                           {/* Horizontal connecting line to card 4 */}
-                          <svg className="absolute -bottom-4 left-1/2 transform -translate-x-1/2" width="200" height="32" viewBox="0 0 200 32">
-                            <path 
-                              d="M 0 0 L 0 16 L -160 16 L -160 32" 
-                              stroke="url(#gradient1)" 
-                              strokeWidth="2" 
+                          <svg
+                            className="absolute -bottom-4 left-1/2 transform -translate-x-1/2"
+                            width="200"
+                            height="32"
+                            viewBox="0 0 200 32"
+                          >
+                            <path
+                              d="M 0 0 L 0 16 L -160 16 L -160 32"
+                              stroke="url(#gradient1)"
+                              strokeWidth="2"
                               fill="none"
                               strokeDasharray="0"
                             />
                             <defs>
-                              <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="0%">
-                                <stop offset="0%" style={{stopColor:'#f97316', stopOpacity:1}} />
-                                <stop offset="100%" style={{stopColor:'#ea580c', stopOpacity:1}} />
+                              <linearGradient
+                                id="gradient1"
+                                x1="0%"
+                                y1="0%"
+                                x2="100%"
+                                y2="0%"
+                              >
+                                <stop
+                                  offset="0%"
+                                  style={{
+                                    stopColor: "#f97316",
+                                    stopOpacity: 1,
+                                  }}
+                                />
+                                <stop
+                                  offset="100%"
+                                  style={{
+                                    stopColor: "#ea580c",
+                                    stopOpacity: 1,
+                                  }}
+                                />
                               </linearGradient>
                             </defs>
-                            <circle cx="-160" cy="32" r="6" fill="#ea580c" stroke="white" strokeWidth="2"/>
+                            <circle
+                              cx="-160"
+                              cy="32"
+                              r="6"
+                              fill="#ea580c"
+                              stroke="white"
+                              strokeWidth="2"
+                            />
                           </svg>
                         </div>
                       )}
-                      
+
                       {/* Card 4 → Card 5: Horizontal Right */}
                       {idx === 3 && (
                         <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gradient-to-r from-accent-500 to-orange-500 z-0">
                           <div className="absolute -right-1.5 -top-1.5 w-3 h-3 bg-orange-500 rounded-full border-2 border-white shadow-md"></div>
                         </div>
                       )}
-                      
+
                       {/* Card 5 → Card 6: Horizontal Right */}
                       {idx === 4 && (
                         <div className="hidden lg:block absolute -right-4 top-1/2 transform -translate-y-1/2 w-8 h-0.5 bg-gradient-to-r from-accent-500 to-orange-500 z-0">
@@ -244,26 +289,32 @@ const Story = () => {
           <h2 className="text-2xl md:text-3xl font-bold text-neutral-800">
             Because food isn't just fuel
           </h2>
-          
+
           {/* Values Grid with connecting flow */}
           <div className="relative">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-neutral-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative">
-                <p className="text-base md:text-lg font-semibold text-red-600">It's how we care</p>
+                <p className="text-base md:text-lg font-semibold text-red-600">
+                  It's how we care
+                </p>
                 {/* Connection to next card */}
                 <div className="hidden md:block absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-red-400 to-blue-400">
                   <div className="absolute -right-1 -top-1 w-2 h-2 bg-blue-500 rounded-full"></div>
                 </div>
               </div>
               <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-neutral-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 relative">
-                <p className="text-base md:text-lg font-semibold text-blue-600">connect</p>
+                <p className="text-base md:text-lg font-semibold text-blue-600">
+                  connect
+                </p>
                 {/* Connection to next card */}
                 <div className="hidden md:block absolute -right-2 top-1/2 transform -translate-y-1/2 w-4 h-0.5 bg-gradient-to-r from-blue-400 to-green-400">
                   <div className="absolute -right-1 -top-1 w-2 h-2 bg-green-500 rounded-full"></div>
                 </div>
               </div>
               <div className="bg-white p-4 md:p-6 rounded-xl shadow-lg border border-neutral-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                <p className="text-base md:text-lg font-semibold text-green-700">and contribute</p>
+                <p className="text-base md:text-lg font-semibold text-green-700">
+                  and contribute
+                </p>
               </div>
             </div>
           </div>
@@ -275,7 +326,9 @@ const Story = () => {
           {/* Mission Card */}
           <div className="bg-white/80 backdrop-blur-sm border border-accent-200 rounded-2xl p-6 md:p-8 shadow-lg">
             <p className="text-base md:text-lg text-neutral-700 leading-relaxed mb-6">
-              At Mindy Munchs, we don't claim to be perfect. We're not here to preach. But we are here to create snacks and drinks that are as easy to reach for as the packaged ones — only kinder to your body.
+              At Mindy Munchs, we don't claim to be perfect. We're not here to
+              preach. But we are here to create snacks and drinks that are as
+              easy to reach for as the packaged ones — only kinder to your body.
             </p>
             <div className="flex flex-wrap justify-center gap-3 mb-6">
               <span className="bg-accent-50 text-accent-700 px-4 py-2 rounded-full font-semibold border border-accent-200">
@@ -296,7 +349,8 @@ const Story = () => {
           {/* Mantra Card */}
           <div className="bg-gradient-to-r from-accent-600 to-orange-600 text-white rounded-2xl p-6 md:p-8 shadow-lg">
             <p className="text-lg md:text-xl font-bold">
-              Our Mantra: Revive wholesome foods for modern living.
+              Our Mantra: Reviving Wholesome Trafitional foods for Modern Convenience 
+
             </p>
           </div>
 

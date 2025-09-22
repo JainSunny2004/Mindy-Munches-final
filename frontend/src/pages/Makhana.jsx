@@ -53,7 +53,7 @@ const Makhana = () => {
             {/* Text Section */}
             <div className="space-y-4 sm:space-y-6 order-2 lg:order-1">
               <h2 className="font-heading text-2xl sm:text-3xl font-bold text-neutral-800 text-center lg:text-left">
-                The Many Benefits of Makhana 
+                The Many Benefits of Makhana
               </h2>
 
               <p className="text-base sm:text-lg text-neutral-700 mb-4 sm:mb-6 text-center lg:text-left">
@@ -156,7 +156,7 @@ const Makhana = () => {
             <span className="text-accent-800">Premium Quality Makhana</span>
           </h2>
           <p className="text-base sm:text-lg text-neutral-800 mb-8 sm:mb-12">
-            High-Grade, Hand-Picked Fox Nuts 
+            High-Grade, Hand-Picked Fox Nuts
           </p>
 
           {/* Reduced width container */}
@@ -266,7 +266,7 @@ const Makhana = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
             <div className="space-y-4 order-2 lg:order-1">
               <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold mb-6 sm:mb-8 text-neutral-800 text-center lg:text-left">
-                Nutritional Powerhouse 
+                Nutrition Powerhouse Revisit
               </h2>
               <div className="space-y-2 sm:space-y-3">
                 <div className="group cursor-pointer bg-white/90 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md hover:scale-[1.02] border border-orange-100 hover:bg-orange-50 transition-all duration-200">
@@ -360,7 +360,7 @@ const Makhana = () => {
             {/* Text Section */}
             <div className="space-y-3 sm:space-y-4 order-2 lg:order-2">
               <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-neutral-800 mb-4 sm:mb-6 text-center lg:text-left">
-                Make It Your Way 
+                Make It Your Way
               </h2>
 
               <p className="text-base sm:text-lg text-neutral-800 mb-4 sm:mb-6 text-center lg:text-left">
@@ -374,7 +374,7 @@ const Makhana = () => {
                   <h3 className="font-heading text-base sm:text-lg font-bold text-accent-600 group-hover:text-orange-400 transition mb-1">
                     Creamy Makhana Kheer -{" "}
                     <span className="text-neutral-500 text-xs sm:text-sm ml-2 sm:ml-3 font-normal">
-                      Rich and indulgent dessert perfect for festivities
+                      Rich n indulgent dessert perfect for your sweet tooth
                     </span>
                   </h3>
                 </div>
@@ -479,7 +479,7 @@ const Makhana = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12">
             <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-accent-800 mb-3 sm:mb-4">
-              Ways to Enjoy Makhana 
+              Ways to Enjoy Makhana
             </h2>
             <p className="text-base sm:text-lg text-neutral-600 max-w-2xl mx-auto">
               Discover delicious and nutritious ways to incorporate Makhana into
@@ -519,8 +519,7 @@ const Makhana = () => {
                 </h3>
               </div>
               <p className="text-neutral-700 text-xs sm:text-sm leading-relaxed">
-                Rich and creamy traditional dessert perfect for festivals and
-                special occasions
+                Rich n indulgent dessert perfect for your sweet tooth
               </p>
               <div className="mt-3 sm:mt-4 flex items-center text-xs text-accent-500">
                 <span className="inline-block w-2 h-2 bg-accent-400 rounded-full mr-2"></span>
